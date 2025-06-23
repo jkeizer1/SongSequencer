@@ -42,6 +42,7 @@ namespace CLC_Synths {
 		HighSeqModule();
 		bool guard() const;
 		int getMasterStep() const { return masterStep; }
+		int getState() const { return moduleState; }
 		void assertInitialized();
         void reset(); 
 		void process(); // process one microcontroller loop frame

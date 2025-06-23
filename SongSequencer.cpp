@@ -25,7 +25,6 @@ enum {
     kParamBeatInput,
     kParamPitchCVOutput,
     kParamGateOutput,
-    kParamOutputMode,
     kParamSeq1CVInput,
     kParamSeq1GateInput,
     kParamSeq2CVInput,
@@ -72,12 +71,6 @@ enum {
     kParamStep8Switch
 };
 
-// Enum strings for Output Mode and Switch
-static const char* const enumStringsOutputMode[] = {
-    "Add",
-    "Replace",
-    nullptr
-};
 static const char* const enumStringsSwitch[] = {
     "Off",
     "On",
@@ -89,7 +82,6 @@ static const _NT_parameter songSequencerParameters[] = {
     NT_PARAMETER_AUDIO_INPUT("Beat Input", 1, 1)
     NT_PARAMETER_CV_OUTPUT("Pitch CV Output", 1, 2)
     NT_PARAMETER_CV_OUTPUT("Gate Output", 1, 3)
-    {"Output Mode", 0, 1, 0, kNT_unitEnum, kNT_scalingNone, enumStringsOutputMode},
     NT_PARAMETER_CV_INPUT("Seq1 CV Input", 1, 5)
     NT_PARAMETER_CV_INPUT("Seq1 Gate Input", 1, 6)
     NT_PARAMETER_CV_INPUT("Seq2 CV Input", 1, 7)
@@ -140,8 +132,7 @@ static const _NT_parameter songSequencerParameters[] = {
 static const uint8_t routingPageParams[] = {
     kParamBeatInput,
     kParamPitchCVOutput,
-    kParamGateOutput,
-    kParamOutputMode
+    kParamGateOutput
 };
 static const uint8_t sequencerAssignPageParams[] = {
     kParamSeq1CVInput,
@@ -205,6 +196,25 @@ static const _NT_parameterPages songSequencerParameterPagesStruct = {
     songSequencerParameterPages
 };
 
+
+void assignSequencerParameters (_NT_algorithm* self) {
+
+    SongSequencer* alg = static_cast<SongSequencer*>(self);
+
+    // Initialize highSeqModule with default parameter values
+    for (int s = 0; s < alg->highSeqModule.NUM_SEQUENCERS; s++) {
+        alg->highSeqModule.sequencers[s].set_beatsPerBar(alg->v[kParamSeq1BeatsPerBar + s * 2]);
+        alg->highSeqModule.sequencers[s].set_bars(alg->v[kParamSeq1Bars + s * 2]);
+    }
+    for (int i = 0; i < alg->highSeqModule.NUM_STEPS; i++) {
+        int base = kParamStep1Seq + i * 3;
+        alg->highSeqModule.steps[i].set_sequencer(alg->v[base]);
+        alg->highSeqModule.steps[i].set_repeats(alg->v[base + 1]);
+        alg->highSeqModule.steps[i].set_switch(static_cast<SWITCHSTATE>(alg->v[base + 2]));
+    }
+}
+
+
 _NT_algorithm* constructSongSequencer(const _NT_algorithmMemoryPtrs& ptrs,
                                       const _NT_algorithmRequirements& req,
                                       const int32_t* specifications) {
@@ -224,16 +234,39 @@ _NT_algorithm* constructSongSequencer(const _NT_algorithmMemoryPtrs& ptrs,
         alg->highSeqModule.steps[i].set_switch(static_cast<SWITCHSTATE>(alg->v[base + 2]));
     }
 
+    alg->highSeqModule.assertInitialized();
     return alg;
 }
 
+void distributeBeatVoltage (float beatVoltage, SongSequencer* alg) {
+    // share beat input across all sequencers (different than VCV rack where each seq. has own beat input)
+    for (int sequencer = 0; sequencer < alg->highSeqModule.NUM_SEQUENCERS; sequencer++) {
+        if (beatVoltage < 5.0f) {
+            alg->highSeqModule.sequencers[sequencer].set_beatState(BEATSTATE::LOW);
+        }
+        else {  // voltage is HIGH
+            if (alg->highSeqModule.sequencers[sequencer].getbeatState() == BEATSTATE::LOW) {
+                alg->highSeqModule.sequencers[sequencer].set_beatState(BEATSTATE::FIRSTHIGH);
+                // cout << "SET FIRSTHIGH for seq: " << s << endl;
+            }
+            else if (alg->highSeqModule.sequencers[sequencer].getbeatState() == BEATSTATE::FIRSTHIGH) {
+                alg->highSeqModule.sequencers[sequencer].set_beatState(BEATSTATE::STILLHIGH);
+                // cout << "FIRSTHIGH --> STILLHIGH for seq: " << s << endl;
+            }
+            else {
+                alg->highSeqModule.sequencers[sequencer].set_beatState(BEATSTATE::STILLHIGH);
+                // cout << "SET STILLHIGH for seq: s" << s << endl;
+            }
+        } // voltage is high
+    } // sequencer loop
+}
 
 void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     SongSequencer* alg = static_cast<SongSequencer*>(self);
     int numFrames = numFramesBy4 * 4;
-    int beatBus = self->v[kParamBeatInput];
-    int pitchBus = self->v[kParamPitchCVOutput];
-    int gateBus = self->v[kParamGateOutput];
+    int beatBusIN = self->v[kParamBeatInput];
+    int pitchBusOUT = self->v[kParamPitchCVOutput];
+    int gateBusOUT = self->v[kParamGateOutput];
 
     // Update sequencer input bus assignments
     alg->sequencerCVInput[0] = self->v[kParamSeq1CVInput];
@@ -248,11 +281,57 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
     alg->sequencerGateInput[4] = self->v[kParamSeq5GateInput];
 
     // Get pointers to input and output memory locations
-    float* beatInput = busFrames + beatBus * numFrames;
-    float* pitchOutput = busFrames + pitchBus * numFrames;
-    float* gateOutput = busFrames + gateBus * numFrames;
+    float* beatInput = busFrames + beatBusIN * numFrames;
+    float* pitchOutput = busFrames + pitchBusOUT * numFrames;
+    float* gateOutput = busFrames + gateBusOUT * numFrames;
 
-}
+    // find squencer to read cv and gate from based on the current active step of the mater sequencer
+    int masterStep = alg->highSeqModule.getMasterStep();
+    int sequencer = 0; // Default to sequencer 0 or handle differently
+
+    // Validate masterstep (it can be -1 if all steps are OFF or possible other error conditions)
+    if (masterStep >= 0 && masterStep < HighSeqModule::NUM_STEPS) {
+        sequencer = alg->highSeqModule.steps[masterStep].getAssignedSeq();
+    }
+    else {  // no master step, bail and return: set pitch and gate outputs to 0.0f
+        for (int frame = 0; frame < numFrames; frame++) {
+            gateOutput[frame] = 0.0f;
+            pitchOutput[frame] = 0.0f;
+        }
+        return;
+    }
+
+    // Process busFrames
+    for (int frame = 0; frame < numFrames; frame++) {
+        // distribute beat input to all 5 sequencers
+        distributeBeatVoltage (beatInput[frame], alg);
+
+        // Process sequencer logic
+        alg->highSeqModule.process();
+
+        // pitch cv input to pitch output
+        float* cvInput; // used for both pitch and gate inputs
+        if (alg->sequencerCVInput[sequencer] >= 0 && alg->sequencerCVInput[sequencer] < 28) {
+            cvInput = busFrames + alg->sequencerCVInput[sequencer] * numFrames;
+            float pitch = cvInput[frame];
+            pitchOutput[frame] = pitch;
+        } else {
+            pitchOutput[frame] = 0.0f; // Fallback if bus is invalid
+        }
+
+        // gate cv input to gate output
+        if (alg->sequencerGateInput[sequencer] >= 0 && alg->sequencerGateInput[sequencer] < 28) {
+            cvInput = busFrames + alg->sequencerGateInput[sequencer] * numFrames;
+            float gate = cvInput[frame];
+            gateOutput[frame] = gate;
+        } else {
+            gateOutput[frame] = 0.0f; // fallback if bus is invalid
+        }
+
+    } // frame loop
+
+} // step function
+
 
 void parameterChanged(_NT_algorithm* self, int p) {
 
@@ -280,6 +359,51 @@ void parameterChanged(_NT_algorithm* self, int p) {
     }
 }
 
+bool drawSongSequencer (_NT_algorithm* self) {
+    const SongSequencer* alg = static_cast<const SongSequencer*>(self);
+    char buffer[32];
+
+    assignSequencerParameters (self);
+    int color = 15;
+
+    // LINE ONE - Basic Info
+    int y = 10;
+    int y_offset = 7;
+    NT_drawText (1, y, "Step:", color, kNT_textLeft, kNT_textTiny);
+    NT_intToString(buffer, alg->highSeqModule.getMasterStep());
+    NT_drawText(30, y, buffer, color, kNT_textLeft, kNT_textTiny);
+
+    NT_drawText (60, y, "State", color, kNT_textLeft, kNT_textTiny);
+    NT_intToString(buffer, alg->highSeqModule.getState());
+    NT_drawText(90, y, buffer, color, kNT_textLeft, kNT_textTiny);
+
+    // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
+    int offset = 30;
+    y += y_offset;
+    NT_drawText (1, y, "Step", color, kNT_textLeft, kNT_textTiny);
+    for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
+        NT_intToString(buffer, step+1);
+        NT_drawText (offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textTiny);
+    }
+
+    // LINE THREE - Assigned Sequencer
+    y += y_offset;
+    NT_drawText (1, y, "Seq ", color, kNT_textLeft, kNT_textTiny);
+    for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
+        NT_intToString(buffer, alg->highSeqModule.steps[step].getAssignedSeq());
+        NT_drawText (offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textTiny);
+    }
+
+    // LINE FOUR - Switch State
+    y += y_offset;
+    NT_drawText (1, y, "OnOff", color, kNT_textLeft, kNT_textTiny);
+    for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
+        NT_intToString(buffer, alg->highSeqModule.steps[step].getOnOffSwitch());
+        NT_drawText (offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textTiny);
+    }
+
+    return true; //suppress native parameter line
+}
 
 void calculateStaticRequirementsSongSequencer(_NT_staticRequirements& req) {
     req.dram = 0; // No static DRAM needed
@@ -305,7 +429,7 @@ static const _NT_factory songSequencerFactory = {
     constructSongSequencer,  // constructor
     parameterChanged,
     stepSongSequencer, // step function
-    nullptr, // draw function
+    drawSongSequencer, // draw function
     nullptr, // midirealtime
     nullptr, // midi message
     kNT_tagUtility, // NT tags
