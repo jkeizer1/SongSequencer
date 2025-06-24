@@ -14,6 +14,7 @@ struct SongSequencer : public _NT_algorithm {
     HighSeqModule highSeqModule;
     int sequencerCVInput[HighSeqModule::NUM_SEQUENCERS];   // CV input bus index for each sequencer (-1 = unassigned)
     int sequencerGateInput[HighSeqModule::NUM_SEQUENCERS]; // Gate input bus index for each sequencer (-1 = unassigned)
+    float lastBeatVoltage; // for debugging
 };
 
 // constants
@@ -79,15 +80,15 @@ static const char* const enumStringsSwitch[] = {
 
 // Parameter definitions
 static const _NT_parameter songSequencerParameters[] = {
-    NT_PARAMETER_AUDIO_INPUT("Beat Input", 1, 1)
-    NT_PARAMETER_CV_OUTPUT("Pitch CV Output", 1, 2)
-    NT_PARAMETER_CV_OUTPUT("Gate Output", 1, 3)
-    NT_PARAMETER_CV_INPUT("Seq1 CV Input", 1, 5)
-    NT_PARAMETER_CV_INPUT("Seq1 Gate Input", 1, 6)
-    NT_PARAMETER_CV_INPUT("Seq2 CV Input", 1, 7)
-    NT_PARAMETER_CV_INPUT("Seq2 Gate Input", 1, 8)
-    NT_PARAMETER_CV_INPUT("Seq3 CV Input", 1, 9)
-    NT_PARAMETER_CV_INPUT("Seq3 Gate Input", 1, 10)
+    NT_PARAMETER_AUDIO_INPUT("Beat Input", 0, 1)   /* was 1,1. Note the first 0 is none */
+    NT_PARAMETER_CV_OUTPUT("Pitch CV Output", 0, 1)
+    NT_PARAMETER_CV_OUTPUT("Gate Output", 0, 2)
+    NT_PARAMETER_CV_INPUT("Seq1 CV Input", 0, 5)
+    NT_PARAMETER_CV_INPUT("Seq1 Gate Input", 0, 6)
+    NT_PARAMETER_CV_INPUT("Seq2 CV Input", 0, 7)
+    NT_PARAMETER_CV_INPUT("Seq2 Gate Input", 0, 8)
+    NT_PARAMETER_CV_INPUT("Seq3 CV Input", 0, 9)
+    NT_PARAMETER_CV_INPUT("Seq3 Gate Input", 0, 10)
     NT_PARAMETER_CV_INPUT("Seq4 CV Input", 0, 0)
     NT_PARAMETER_CV_INPUT("Seq4 Gate Input", 0, 0)
     NT_PARAMETER_CV_INPUT("Seq5 CV Input", 0, 0)
@@ -233,7 +234,7 @@ _NT_algorithm* constructSongSequencer(const _NT_algorithmMemoryPtrs& ptrs,
         alg->highSeqModule.steps[i].set_repeats(alg->v[base + 1]);
         alg->highSeqModule.steps[i].set_switch(static_cast<SWITCHSTATE>(alg->v[base + 2]));
     }
-
+    alg->highSeqModule.reset();
     alg->highSeqModule.assertInitialized();
     return alg;
 }
@@ -241,7 +242,7 @@ _NT_algorithm* constructSongSequencer(const _NT_algorithmMemoryPtrs& ptrs,
 void distributeBeatVoltage (float beatVoltage, SongSequencer* alg) {
     // share beat input across all sequencers (different than VCV rack where each seq. has own beat input)
     for (int sequencer = 0; sequencer < alg->highSeqModule.NUM_SEQUENCERS; sequencer++) {
-        if (beatVoltage < 5.0f) {
+        if (beatVoltage < 3.0f) {
             alg->highSeqModule.sequencers[sequencer].set_beatState(BEATSTATE::LOW);
         }
         else {  // voltage is HIGH
@@ -264,50 +265,60 @@ void distributeBeatVoltage (float beatVoltage, SongSequencer* alg) {
 void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     SongSequencer* alg = static_cast<SongSequencer*>(self);
     int numFrames = numFramesBy4 * 4;
-    int beatBusIN = self->v[kParamBeatInput];
-    int pitchBusOUT = self->v[kParamPitchCVOutput];
-    int gateBusOUT = self->v[kParamGateOutput];
+
+    int beatBusIN = self->v[kParamBeatInput] - 1;
+    int pitchBusOUT = self->v[kParamPitchCVOutput] - 1;
+    int gateBusOUT = self->v[kParamGateOutput] - 1;
+
 
     // Update sequencer input bus assignments
-    alg->sequencerCVInput[0] = self->v[kParamSeq1CVInput];
-    alg->sequencerGateInput[0] = self->v[kParamSeq1GateInput];
-    alg->sequencerCVInput[1] = self->v[kParamSeq2CVInput];
-    alg->sequencerGateInput[1] = self->v[kParamSeq2GateInput];
-    alg->sequencerCVInput[2] = self->v[kParamSeq3CVInput];
-    alg->sequencerGateInput[2] = self->v[kParamSeq3GateInput];
-    alg->sequencerCVInput[3] = self->v[kParamSeq4CVInput];
-    alg->sequencerGateInput[3] = self->v[kParamSeq4GateInput];
-    alg->sequencerCVInput[4] = self->v[kParamSeq5CVInput];
-    alg->sequencerGateInput[4] = self->v[kParamSeq5GateInput];
+    alg->sequencerCVInput[0] = self->v[kParamSeq1CVInput] - 1;
+    alg->sequencerGateInput[0] = self->v[kParamSeq1GateInput] - 1;
+
+    alg->sequencerCVInput[1] = self->v[kParamSeq2CVInput] - 1;
+    alg->sequencerGateInput[1] = self->v[kParamSeq2GateInput] - 1;
+
+    alg->sequencerCVInput[2] = self->v[kParamSeq3CVInput] - 1;
+    alg->sequencerGateInput[2] = self->v[kParamSeq3GateInput] - 1;
+
+    alg->sequencerCVInput[3] = self->v[kParamSeq4CVInput] - 1;
+    alg->sequencerGateInput[3] = self->v[kParamSeq4GateInput] - 1;
+
+    alg->sequencerCVInput[4] = self->v[kParamSeq5CVInput] - 1;
+    alg->sequencerGateInput[4] = self->v[kParamSeq5GateInput] - 1;
 
     // Get pointers to input and output memory locations
     float* beatInput = busFrames + beatBusIN * numFrames;
     float* pitchOutput = busFrames + pitchBusOUT * numFrames;
     float* gateOutput = busFrames + gateBusOUT * numFrames;
 
-    // find squencer to read cv and gate from based on the current active step of the mater sequencer
-    int masterStep = alg->highSeqModule.getMasterStep();
-    int sequencer = 0; // Default to sequencer 0 or handle differently
-
-    // Validate masterstep (it can be -1 if all steps are OFF or possible other error conditions)
-    if (masterStep >= 0 && masterStep < HighSeqModule::NUM_STEPS) {
-        sequencer = alg->highSeqModule.steps[masterStep].getAssignedSeq();
-    }
-    else {  // no master step, bail and return: set pitch and gate outputs to 0.0f
-        for (int frame = 0; frame < numFrames; frame++) {
-            gateOutput[frame] = 0.0f;
-            pitchOutput[frame] = 0.0f;
-        }
-        return;
-    }
+    int masterStep;
 
     // Process busFrames
     for (int frame = 0; frame < numFrames; frame++) {
+
         // distribute beat input to all 5 sequencers
         distributeBeatVoltage (beatInput[frame], alg);
+        alg->lastBeatVoltage = beatInput[frame]; // Store last voltage for debugging
 
         // Process sequencer logic
         alg->highSeqModule.process();
+
+        // Safety check; all step switches might be off
+        masterStep = alg->highSeqModule.getMasterStep();
+        if (masterStep < 0) {
+            gateOutput[frame] = 0.0f;
+            pitchOutput[frame] = 0.0f;
+            return;
+        }
+
+        // Find the current sequencer based on the step
+        int sequencer = alg->highSeqModule.steps[masterStep].getAssignedSeq();
+        if (sequencer < 0 || sequencer > alg->highSeqModule.NUM_SEQUENCERS) {
+            gateOutput[frame] = 0.0f;
+            pitchOutput[frame] = 0.0f;
+            return;
+        }
 
         // pitch cv input to pitch output
         float* cvInput; // used for both pitch and gate inputs
@@ -369,12 +380,55 @@ bool drawSongSequencer (_NT_algorithm* self) {
     // LINE ONE - Basic Info
     int y = 10;
     int y_offset = 7;
-    NT_drawText (1, y, "Step:", color, kNT_textLeft, kNT_textTiny);
-    NT_intToString(buffer, alg->highSeqModule.getMasterStep());
+    int masterStep = alg->highSeqModule.getMasterStep();
+    int assignedSeq = -1;
+
+    if (masterStep >= 0)
+        assignedSeq = alg->highSeqModule.steps[masterStep].getAssignedSeq();
+
+    // LINE ONE - Master Step
+    NT_drawText (1, y, "M_Step:", color, kNT_textLeft, kNT_textTiny);
+    NT_intToString(buffer, masterStep);
     NT_drawText(30, y, buffer, color, kNT_textLeft, kNT_textTiny);
 
+    // LINE ONE - overall highSeqModule State
     NT_drawText (60, y, "State", color, kNT_textLeft, kNT_textTiny);
     NT_intToString(buffer, alg->highSeqModule.getState());
+    NT_drawText(90, y, buffer, color, kNT_textLeft, kNT_textTiny);
+
+    // LINE ONE - Assigned Sequencer for masterStep or report -1
+    NT_drawText (120, y, "ASEQ", color, kNT_textLeft, kNT_textTiny);
+    if (masterStep >= 0) {
+        NT_intToString(buffer, assignedSeq);
+        NT_drawText(150, y, buffer, color, kNT_textLeft, kNT_textTiny);
+    }
+    else
+        NT_drawText(150, y, "none", color, kNT_textLeft, kNT_textTiny);
+
+    // LINE ONE - Beatcount for active sequencer
+    NT_drawText (180, y, "Beat", color, kNT_textLeft, kNT_textTiny);
+    if (masterStep >= 0) {
+
+        if (assignedSeq >= 0 && assignedSeq < alg->highSeqModule.NUM_SEQUENCERS) {
+           NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatCount());
+           NT_drawText(210, y, buffer, color, kNT_textLeft, kNT_textTiny);
+           NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatState());
+           NT_drawText(240, y, buffer, color, kNT_textLeft, kNT_textTiny);
+        }
+        else
+           NT_drawText(210, y, "invalid", color, kNT_textLeft, kNT_textTiny);
+    }
+    else
+        NT_drawText(210, y, "none", color, kNT_textLeft, kNT_textTiny);
+
+    // After LINE ONE DEBUGGING
+    y += y_offset; // Move to a new line (e.g., y = 17)
+    NT_drawText(1, y, "BeatV ", color, kNT_textLeft, kNT_textTiny);
+    NT_floatToString(buffer, alg->lastBeatVoltage, 2); // Assuming NT_floatToString exists, or format manually
+    NT_drawText(30, y, buffer, color, kNT_textLeft, kNT_textTiny);
+    // DEBUGGING
+    NT_drawText(60, y, "BeatBus ", color, kNT_textLeft, kNT_textTiny);
+    NT_intToString(buffer, alg->v[kParamBeatInput]);
     NT_drawText(90, y, buffer, color, kNT_textLeft, kNT_textTiny);
 
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
