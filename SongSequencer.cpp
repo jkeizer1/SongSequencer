@@ -8,6 +8,18 @@
 
 using namespace CLC_Synths;
 
+struct _cursor {
+    int x;
+    int y;
+    _cursor () : x(0), y(0) {}
+};
+
+struct _cell {
+    int row;
+    int col;
+    _cell () : row(1), col(1) {}
+};
+
 struct SongSequencer : public _NT_algorithm {
     SongSequencer() {}
     ~SongSequencer() {}
@@ -15,6 +27,7 @@ struct SongSequencer : public _NT_algorithm {
     int sequencerCVInput[HighSeqModule::NUM_SEQUENCERS];   // CV input bus index for each sequencer (-1 = unassigned)
     int sequencerGateInput[HighSeqModule::NUM_SEQUENCERS]; // Gate input bus index for each sequencer (-1 = unassigned)
     float lastBeatVoltage; // for debugging
+    _cell cell;
 };
 
 // constants
@@ -264,6 +277,7 @@ void distributeBeatVoltage (float beatVoltage, SongSequencer* alg) {
 
 void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     SongSequencer* alg = static_cast<SongSequencer*>(self);
+
     int numFrames = numFramesBy4 * 4;
 
     int beatBusIN = self->v[kParamBeatInput] - 1;
@@ -370,9 +384,46 @@ void parameterChanged(_NT_algorithm* self, int p) {
     }
 }
 
+
+// return controls to be used in the customUI and so overridden
+uint32_t hasCustomUI (_NT_algorithm* self) {
+    return (
+            static_cast<uint16_t>(
+                _NT_controls::kNT_potC |          // vertical cursor (y)
+                _NT_controls::kNT_potR |          // horozontal cursor (x)
+                _NT_controls::kNT_encoderR |      // change value at cursor position
+                _NT_controls::kNT_encoderL        // not used but override default behaviour
+                //_NT_controls::kNT_encoderButtonR  // enter value
+            )
+    );
+}
+
+
+/*
+ * struct _NT_uiData
+ { *
+ float		pots[3];		// current pot positions [0.0-1.0]
+ uint16_t	controls;		// current button states, and which pots changed (_NT_controls)
+ uint16_t 	lastButtons;	// previous button states
+ int8_t		encoders[2];	// encoder change ±1 or 0
+ uint8_t		unused[2];
+ };
+ // screen is 256x64 - each byte contains two pixels
+ */
+void customUI (_NT_algorithm* self, const _NT_uiData& data) {
+    SongSequencer* alg = static_cast<SongSequencer*>(self);
+
+    alg->cell.col = floor(data.pots[1]*8) + 1; // 8 steps ... resolves to 1..9
+    alg->cell.row = floor(data.pots[2]*3) + 1; // 3 variables ... resolves to 1..4
+
+    if (alg->cell.col > 8) alg->cell.col = 8;
+    if (alg->cell.row > 3) alg->cell.row = 3;
+}
+
 bool drawSongSequencer (_NT_algorithm* self) {
     const SongSequencer* alg = static_cast<const SongSequencer*>(self);
     char buffer[32];
+    _cursor cursor;
 
     assignSequencerParameters (self);
     int color = 15;
@@ -432,12 +483,12 @@ bool drawSongSequencer (_NT_algorithm* self) {
     NT_drawText(90, y, buffer, color, kNT_textLeft, kNT_textTiny);
 
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
-    int offset = 30;
+    int x_offset = 30;
     y += y_offset;
     NT_drawText (1, y, "Step", color, kNT_textLeft, kNT_textTiny);
     for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
         NT_intToString(buffer, step+1);
-        NT_drawText (offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textTiny);
+        NT_drawText (x_offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textNormal);
     }
 
     // LINE THREE - Assigned Sequencer
@@ -445,7 +496,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
     NT_drawText (1, y, "Seq ", color, kNT_textLeft, kNT_textTiny);
     for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
         NT_intToString(buffer, alg->highSeqModule.steps[step].getAssignedSeq());
-        NT_drawText (offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textTiny);
+        NT_drawText (x_offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textNormal);
     }
 
     // LINE FOUR - Switch State
@@ -453,8 +504,13 @@ bool drawSongSequencer (_NT_algorithm* self) {
     NT_drawText (1, y, "OnOff", color, kNT_textLeft, kNT_textTiny);
     for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
         NT_intToString(buffer, alg->highSeqModule.steps[step].getOnOffSwitch());
-        NT_drawText (offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textTiny);
+        NT_drawText (x_offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textNormal);
     }
+
+    // draw a cursor
+    cursor.x = alg->cell.col * x_offset;
+    cursor.y = 2 * y_offset + alg->cell.row * y_offset;
+    NT_drawShapeI (kNT_circle, cursor.x, cursor.y, 5, 5);
 
     return true; //suppress native parameter line
 }
@@ -487,8 +543,8 @@ static const _NT_factory songSequencerFactory = {
     nullptr, // midirealtime
     nullptr, // midi message
     kNT_tagUtility, // NT tags
-    nullptr, // hasCustomUi
-    nullptr, // customUI
+    hasCustomUI, // hasCustomUi
+    customUI, // customUI
     nullptr, // setupUI
     nullptr, // serialise
     nullptr // deserialise,
