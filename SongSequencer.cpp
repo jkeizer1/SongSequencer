@@ -24,8 +24,12 @@ struct SongSequencer : public _NT_algorithm {
     SongSequencer() {}
     ~SongSequencer() {}
     HighSeqModule highSeqModule;
-    int sequencerCVInput[HighSeqModule::NUM_SEQUENCERS];   // CV input bus index for each sequencer (-1 = unassigned)
-    int sequencerGateInput[HighSeqModule::NUM_SEQUENCERS]; // Gate input bus index for each sequencer (-1 = unassigned)
+
+    int sequencerCVInput[HighSeqModule::NUM_SEQUENCERS];      // CV input bus index for each sequencer (-1 = unassigned)
+    int sequencerGateInput[HighSeqModule::NUM_SEQUENCERS];    // Gate input bus index for each sequencer (-1 = unassigned)
+
+    int sequencerResetOutput[HighSeqModule::NUM_SEQUENCERS];    // Reset output bus index for each sequencer (-1 = unassigned)
+
     float lastBeatVoltage; // for debugging
     _cell cell;
 };
@@ -36,50 +40,74 @@ static const int PARAMS_PER_MASTERSTEP = 3;
 
 // Parameter indices
 enum {
+    kParamResetInput,
     kParamBeatInput,
     kParamPitchCVOutput,
     kParamGateOutput,
+
     kParamSeq1CVInput,
     kParamSeq1GateInput,
+    kParamSeq1ResetOutput,
+
     kParamSeq2CVInput,
     kParamSeq2GateInput,
+    kParamSeq2ResetOutput,
+
     kParamSeq3CVInput,
     kParamSeq3GateInput,
+    kParamSeq3ResetOutput,
+
     kParamSeq4CVInput,
     kParamSeq4GateInput,
+    kParamSeq4ResetOutput,
+
     kParamSeq5CVInput,
     kParamSeq5GateInput,
+    kParamSeq5ResetOutput,
+
     kParamSeq1BeatsPerBar,
     kParamSeq1Bars,
+
     kParamSeq2BeatsPerBar,
     kParamSeq2Bars,
+
     kParamSeq3BeatsPerBar,
     kParamSeq3Bars,
+
     kParamSeq4BeatsPerBar,
     kParamSeq4Bars,
+
     kParamSeq5BeatsPerBar,
     kParamSeq5Bars,
+
     kParamStep1Seq,
     kParamStep1Repeats,
     kParamStep1Switch,
+
     kParamStep2Seq,
     kParamStep2Repeats,
     kParamStep2Switch,
+
     kParamStep3Seq,
     kParamStep3Repeats,
     kParamStep3Switch,
+
     kParamStep4Seq,
     kParamStep4Repeats,
     kParamStep4Switch,
+
     kParamStep5Seq,
     kParamStep5Repeats,
     kParamStep5Switch,
+
     kParamStep6Seq,
     kParamStep6Repeats,
     kParamStep6Switch,
+
     kParamStep7Seq,
     kParamStep7Repeats,
     kParamStep7Switch,
+
     kParamStep8Seq,
     kParamStep8Repeats,
     kParamStep8Switch
@@ -93,19 +121,31 @@ static const char* const enumStringsSwitch[] = {
 
 // Parameter definitions
 static const _NT_parameter songSequencerParameters[] = {
-    NT_PARAMETER_AUDIO_INPUT("Beat Input", 0, 1)   /* was 1,1. Note the first 0 is none */
+    NT_PARAMETER_AUDIO_INPUT("Reset Input", 0, 1)   /* was 1,1. Note the first 0 is none */
+    NT_PARAMETER_AUDIO_INPUT("Beat Input", 0, 2)    /* was 1,1. Note the first 0 is none */
     NT_PARAMETER_CV_OUTPUT("Pitch CV Output", 0, 1)
     NT_PARAMETER_CV_OUTPUT("Gate Output", 0, 2)
+
     NT_PARAMETER_CV_INPUT("Seq1 CV Input", 0, 5)
     NT_PARAMETER_CV_INPUT("Seq1 Gate Input", 0, 6)
+    NT_PARAMETER_CV_INPUT("Seq1 Reset Output", 0, 0)
+
     NT_PARAMETER_CV_INPUT("Seq2 CV Input", 0, 7)
     NT_PARAMETER_CV_INPUT("Seq2 Gate Input", 0, 8)
+    NT_PARAMETER_CV_INPUT("Seq2 Reset Output", 0, 0)
+
     NT_PARAMETER_CV_INPUT("Seq3 CV Input", 0, 9)
     NT_PARAMETER_CV_INPUT("Seq3 Gate Input", 0, 10)
+    NT_PARAMETER_CV_INPUT("Seq3 Reset Output", 0, 0)
+
     NT_PARAMETER_CV_INPUT("Seq4 CV Input", 0, 0)
     NT_PARAMETER_CV_INPUT("Seq4 Gate Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq4 Reset Output", 0, 0)
+
     NT_PARAMETER_CV_INPUT("Seq5 CV Input", 0, 0)
     NT_PARAMETER_CV_INPUT("Seq5 Gate Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq5 Reset Output", 0, 0)
+
     {"Seq1 Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq1 Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq2 Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
@@ -144,6 +184,7 @@ static const _NT_parameter songSequencerParameters[] = {
 
 // Parameter pages
 static const uint8_t routingPageParams[] = {
+    kParamResetInput,
     kParamBeatInput,
     kParamPitchCVOutput,
     kParamGateOutput
@@ -151,14 +192,23 @@ static const uint8_t routingPageParams[] = {
 static const uint8_t sequencerAssignPageParams[] = {
     kParamSeq1CVInput,
     kParamSeq1GateInput,
+    kParamSeq1ResetOutput,
+
     kParamSeq2CVInput,
     kParamSeq2GateInput,
+    kParamSeq2ResetOutput,
+
     kParamSeq3CVInput,
     kParamSeq3GateInput,
+    kParamSeq3ResetOutput,
+
     kParamSeq4CVInput,
     kParamSeq4GateInput,
+    kParamSeq4ResetOutput,
+
     kParamSeq5CVInput,
-    kParamSeq5GateInput
+    kParamSeq5GateInput,
+    kParamSeq1ResetOutput
 };
 static const uint8_t sequencerConfigPageParams[] = {
     kParamSeq1BeatsPerBar,
@@ -280,28 +330,34 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
 
     int numFrames = numFramesBy4 * 4;
 
+    int resetBusIN = self->v[kParamResetInput] - 1;
     int beatBusIN = self->v[kParamBeatInput] - 1;
     int pitchBusOUT = self->v[kParamPitchCVOutput] - 1;
     int gateBusOUT = self->v[kParamGateOutput] - 1;
 
-
-    // Update sequencer input bus assignments
+    // Update sequencer input and output bus assignments
     alg->sequencerCVInput[0] = self->v[kParamSeq1CVInput] - 1;
     alg->sequencerGateInput[0] = self->v[kParamSeq1GateInput] - 1;
+    alg->sequencerResetOutput[0] = self->v[kParamSeq1ResetOutput] - 1;
 
     alg->sequencerCVInput[1] = self->v[kParamSeq2CVInput] - 1;
     alg->sequencerGateInput[1] = self->v[kParamSeq2GateInput] - 1;
+    alg->sequencerResetOutput[1] = self->v[kParamSeq2ResetOutput] - 1;
 
     alg->sequencerCVInput[2] = self->v[kParamSeq3CVInput] - 1;
     alg->sequencerGateInput[2] = self->v[kParamSeq3GateInput] - 1;
+    alg->sequencerResetOutput[2] = self->v[kParamSeq3ResetOutput] - 1;
 
     alg->sequencerCVInput[3] = self->v[kParamSeq4CVInput] - 1;
     alg->sequencerGateInput[3] = self->v[kParamSeq4GateInput] - 1;
+    alg->sequencerResetOutput[3] = self->v[kParamSeq4ResetOutput] - 1;
 
     alg->sequencerCVInput[4] = self->v[kParamSeq5CVInput] - 1;
     alg->sequencerGateInput[4] = self->v[kParamSeq5GateInput] - 1;
+    alg->sequencerResetOutput[4] = self->v[kParamSeq5ResetOutput] - 1;
 
     // Get pointers to input and output memory locations
+    float* resetInput = busFrames + resetBusIN * numFrames;
     float* beatInput = busFrames + beatBusIN * numFrames;
     float* pitchOutput = busFrames + pitchBusOUT * numFrames;
     float* gateOutput = busFrames + gateBusOUT * numFrames;
@@ -310,6 +366,10 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
 
     // Process busFrames
     for (int frame = 0; frame < numFrames; frame++) {
+
+        // resetInput
+        if (resetInput[frame] > 3.0f)
+            alg->highSeqModule.reset();    // sends reset to all sequencers
 
         // distribute beat input to all 5 sequencers
         distributeBeatVoltage (beatInput[frame], alg);
@@ -351,6 +411,12 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
             gateOutput[frame] = gate;
         } else {
             gateOutput[frame] = 0.0f; // fallback if bus is invalid
+        }
+
+        // reset cv input to sequencer reset output
+        if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
+            float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
+            cvOutput[frame] = resetInput[frame];
         }
 
     } // frame loop
