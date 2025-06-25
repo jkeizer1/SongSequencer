@@ -121,30 +121,30 @@ static const char* const enumStringsSwitch[] = {
 
 // Parameter definitions
 static const _NT_parameter songSequencerParameters[] = {
-    NT_PARAMETER_AUDIO_INPUT("Reset Input", 0, 1)   /* was 1,1. Note the first 0 is none */
-    NT_PARAMETER_AUDIO_INPUT("Beat Input", 0, 2)    /* was 1,1. Note the first 0 is none */
+    NT_PARAMETER_AUDIO_INPUT("Reset Input", 0, 1)   /* 0 is none */
+    NT_PARAMETER_AUDIO_INPUT("Beat Input", 0, 2)
     NT_PARAMETER_CV_OUTPUT("Pitch CV Output", 0, 1)
     NT_PARAMETER_CV_OUTPUT("Gate Output", 0, 2)
 
-    NT_PARAMETER_CV_INPUT("Seq1 CV Input", 0, 5)
-    NT_PARAMETER_CV_INPUT("Seq1 Gate Input", 0, 6)
-    NT_PARAMETER_CV_INPUT("Seq1 Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq A CV Input", 0, 5)
+    NT_PARAMETER_CV_INPUT("Seq A Gate Input", 0, 6)
+    NT_PARAMETER_CV_INPUT("Seq A Reset Output", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq2 CV Input", 0, 7)
-    NT_PARAMETER_CV_INPUT("Seq2 Gate Input", 0, 8)
-    NT_PARAMETER_CV_INPUT("Seq2 Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq B CV Input", 0, 7)
+    NT_PARAMETER_CV_INPUT("Seq B Gate Input", 0, 8)
+    NT_PARAMETER_CV_INPUT("Seq B Reset Output", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq3 CV Input", 0, 9)
-    NT_PARAMETER_CV_INPUT("Seq3 Gate Input", 0, 10)
-    NT_PARAMETER_CV_INPUT("Seq3 Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq C CV Input", 0, 9)
+    NT_PARAMETER_CV_INPUT("Seq C Gate Input", 0, 10)
+    NT_PARAMETER_CV_INPUT("Seq C Reset Output", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq4 CV Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq4 Gate Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq4 Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq D CV Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq D Gate Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq D Reset Output", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq5 CV Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq5 Gate Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq5 Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq E CV Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq E Gate Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("Seq E Reset Output", 0, 0)
 
     {"Seq1 Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq1 Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
@@ -496,7 +496,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
 
     // LINE ONE - Basic Info
     int y = 10;
-    int y_offset = 7;
+    int y_offset = 11;
     int masterStep = alg->highSeqModule.getMasterStep();
     int assignedSeq = -1;
 
@@ -539,6 +539,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
         NT_drawText(210, y, "none", color, kNT_textLeft, kNT_textTiny);
 
     // After LINE ONE DEBUGGING
+    /*
     y += y_offset; // Move to a new line (e.g., y = 17)
     NT_drawText(1, y, "BeatV ", color, kNT_textLeft, kNT_textTiny);
     NT_floatToString(buffer, alg->lastBeatVoltage, 2); // Assuming NT_floatToString exists, or format manually
@@ -547,11 +548,13 @@ bool drawSongSequencer (_NT_algorithm* self) {
     NT_drawText(60, y, "BeatBus ", color, kNT_textLeft, kNT_textTiny);
     NT_intToString(buffer, alg->v[kParamBeatInput]);
     NT_drawText(90, y, buffer, color, kNT_textLeft, kNT_textTiny);
+    */
 
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
     int x_offset = 30;
-    y += y_offset;
-    NT_drawText (1, y, "Step", color, kNT_textLeft, kNT_textTiny);
+    y += y_offset + 5;
+    NT_drawShapeI(kNT_rectangle, 1, y-y_offset, 256, y, 3 );
+    //NT_drawText (1, y, "STEP", 15, kNT_textLeft, kNT_textNormal);
     for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
         NT_intToString(buffer, step+1);
         NT_drawText (x_offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textNormal);
@@ -559,23 +562,48 @@ bool drawSongSequencer (_NT_algorithm* self) {
 
     // LINE THREE - Assigned Sequencer
     y += y_offset;
-    NT_drawText (1, y, "Seq ", color, kNT_textLeft, kNT_textTiny);
+    NT_drawText (1, y, "SEQ ", color, kNT_textLeft, kNT_textNormal);
+    char labels[] = "ABCDE";
     for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
-        NT_intToString(buffer, alg->highSeqModule.steps[step].getAssignedSeq());
+        int seq = alg->highSeqModule.steps[step].getAssignedSeq();
+        buffer[0] = labels[seq];
         NT_drawText (x_offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textNormal);
     }
 
-    // LINE FOUR - Switch State
+    // LINE FOUR - Repeats
     y += y_offset;
-    NT_drawText (1, y, "OnOff", color, kNT_textLeft, kNT_textTiny);
+    NT_drawText (1, y, "REP ", color, kNT_textLeft, kNT_textNormal);
     for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
-        NT_intToString(buffer, alg->highSeqModule.steps[step].getOnOffSwitch());
+        int repeats = alg->highSeqModule.steps[step].getRepeats();
+        NT_intToString(buffer, repeats);
         NT_drawText (x_offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textNormal);
+    }
+
+/*
+    // LINE FIVE - Current Repeat Count
+    y += y_offset;
+    NT_drawText (1, y, "REP#", color, kNT_textLeft, kNT_textNormal);
+    for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
+        int countRepeats = alg->highSeqModule.steps[step].getCountRepeats();
+        NT_intToString(buffer, countRepeats);
+        NT_drawText (x_offset * (step+1), y, buffer, 3, kNT_textLeft, kNT_textNormal);
+    }
+*/
+
+    // LINE SIX - Switch State
+    y += y_offset;
+    NT_drawText (1, y, "On", color, kNT_textLeft, kNT_textNormal);
+    for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
+        if (alg->highSeqModule.steps[step].getOnOffSwitch()) {
+            NT_drawText (x_offset * (step+1), y, "Y", color, kNT_textLeft, kNT_textNormal);
+        } else {
+            NT_drawText (x_offset * (step+1), y, "-", color, kNT_textLeft, kNT_textNormal);
+        }
     }
 
     // draw a cursor
-    cursor.x = alg->cell.col * x_offset;
-    cursor.y = 2 * y_offset + alg->cell.row * y_offset;
+    cursor.x = alg->cell.col * x_offset + 2;
+    cursor.y = y_offset + (alg->cell.row+1) * y_offset;
     NT_drawShapeI (kNT_circle, cursor.x, cursor.y, 5, 5);
 
     return true; //suppress native parameter line
