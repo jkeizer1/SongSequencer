@@ -160,6 +160,7 @@ static const _NT_parameter songSequencerParameters[] = {
     {"Seq4 Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq5 Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq5 Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+
     {"Step1 Seq", 0, 4, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step1 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step1 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
@@ -458,22 +459,7 @@ void parameterChanged(_NT_algorithm* self, int p) {
 
 // return controls to be used in the customUI and so overridden
 uint32_t hasCustomUI (_NT_algorithm* self) {
-    return  kNT_encoderL | kNT_encoderR | kNT_potL | kNT_potC | kNT_potR | kNT_encoderButtonR;
-
-    /*(
-            static_cast<uint16_t>(
-                _NT_controls::kNT_potL |          // horozontal cursor (x)
-                _NT_controls::kNT_encoderL |      // horozontal cursor (x)
-
-                _NT_controls::kNT_potC |          // vertical cursor (y)
-                _NT_controls::kNT_encoderR |      // vertical cursor (y)
-
-                _NT_controls::kNT_potR |          // value if in edit mode
-                _NT_controls::kNT_encoderR |      // value if in edit mode
-
-                _NT_controls::kNT_encoderButtonR  // toggle edit mode
-            )
-    );*/
+    return  kNT_encoderL | kNT_encoderR | kNT_potR | kNT_potButtonR;
 }
 
 
@@ -490,19 +476,16 @@ uint32_t hasCustomUI (_NT_algorithm* self) {
  */
 void customUI (_NT_algorithm* self, const _NT_uiData& data) {
     SongSequencer* alg = static_cast<SongSequencer*>(self);
-    //alg->lastUiData = data; // Store UI data for debugging in draw
+
+    alg->lastUiData = data; // Store UI data for debugging in draw
 
     // left encoder - horozontal cursor
     if (data.encoders[0] != 0)
         alg->cell.col += data.encoders[0];
-    else if (data.controls & kNT_potL) // use pot if encoder not used
-        alg->cell.col = floor(data.pots[0]*8) + 1; // 8 steps ... resolves to 1..9
 
     // right encoder - vertical cursor
     if (data.encoders[1] != 0)
         alg->cell.row += data.encoders[1];
-    else if (data.controls & kNT_potC)
-        alg->cell.row = floor(data.pots[1]*3) + 1; // 3 variables ... resolves to 1..4
 
     if (alg->cell.col < 1) alg->cell.col = 1;
     if (alg->cell.col > 8) alg->cell.col = 8;
@@ -517,6 +500,7 @@ void customUI (_NT_algorithm* self, const _NT_uiData& data) {
         return;
     }
 
+    // In Edit
     int param;
     int value;
     int offset = (alg->cell.col-1) * 3 ;
@@ -606,7 +590,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
         NT_drawText (x_offset * (step+1), y - 2, buffer, color, kNT_textLeft, kNT_textNormal);
         if (step == masterStep)
             NT_drawShapeI (kNT_circle, x_offset * (step+1) + 2, y-5, 6, 6);
-        //NT_drawShapeI (kNT_box, x_offset * (step+1), y, 6, 6);
+            //NT_drawShapeI (kNT_box, x_offset * (step+1) + 2, y-5, 6, 6);
     }
 
     // LINE THREE - Assigned Sequencer
