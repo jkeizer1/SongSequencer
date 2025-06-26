@@ -30,6 +30,10 @@ struct SongSequencer : public _NT_algorithm {
 
     int sequencerResetOutput[HighSeqModule::NUM_SEQUENCERS];    // Reset output bus index for each sequencer (-1 = unassigned)
 
+    bool editMode;
+
+    _NT_uiData lastUiData; // Store last UI data for debugging
+
     float lastBeatVoltage; // for debugging
     _cell cell;
 };
@@ -297,6 +301,7 @@ _NT_algorithm* constructSongSequencer(const _NT_algorithmMemoryPtrs& ptrs,
         alg->highSeqModule.steps[i].set_repeats(alg->v[base + 1]);
         alg->highSeqModule.steps[i].set_switch(static_cast<SWITCHSTATE>(alg->v[base + 2]));
     }
+    alg->editMode = false;
     alg->highSeqModule.reset();
     alg->highSeqModule.assertInitialized();
     return alg;
@@ -453,15 +458,22 @@ void parameterChanged(_NT_algorithm* self, int p) {
 
 // return controls to be used in the customUI and so overridden
 uint32_t hasCustomUI (_NT_algorithm* self) {
-    return (
+    return  kNT_encoderL | kNT_encoderR | kNT_potL | kNT_potC | kNT_potR | kNT_encoderButtonR;
+
+    /*(
             static_cast<uint16_t>(
+                _NT_controls::kNT_potL |          // horozontal cursor (x)
+                _NT_controls::kNT_encoderL |      // horozontal cursor (x)
+
                 _NT_controls::kNT_potC |          // vertical cursor (y)
-                _NT_controls::kNT_potR |          // horozontal cursor (x)
-                _NT_controls::kNT_encoderR |      // change value at cursor position
-                _NT_controls::kNT_encoderL        // not used but override default behaviour
-                //_NT_controls::kNT_encoderButtonR  // enter value
+                _NT_controls::kNT_encoderR |      // vertical cursor (y)
+
+                _NT_controls::kNT_potR |          // value if in edit mode
+                _NT_controls::kNT_encoderR |      // value if in edit mode
+
+                _NT_controls::kNT_encoderButtonR  // toggle edit mode
             )
-    );
+    );*/
 }
 
 
@@ -478,13 +490,56 @@ uint32_t hasCustomUI (_NT_algorithm* self) {
  */
 void customUI (_NT_algorithm* self, const _NT_uiData& data) {
     SongSequencer* alg = static_cast<SongSequencer*>(self);
+    //alg->lastUiData = data; // Store UI data for debugging in draw
 
-    alg->cell.col = floor(data.pots[1]*8) + 1; // 8 steps ... resolves to 1..9
-    alg->cell.row = floor(data.pots[2]*3) + 1; // 3 variables ... resolves to 1..4
+    // left encoder - horozontal cursor
+    if (data.encoders[0] != 0)
+        alg->cell.col += data.encoders[0];
+    else if (data.controls & kNT_potL) // use pot if encoder not used
+        alg->cell.col = floor(data.pots[0]*8) + 1; // 8 steps ... resolves to 1..9
 
+    // right encoder - vertical cursor
+    if (data.encoders[1] != 0)
+        alg->cell.row += data.encoders[1];
+    else if (data.controls & kNT_potC)
+        alg->cell.row = floor(data.pots[1]*3) + 1; // 3 variables ... resolves to 1..4
+
+    if (alg->cell.col < 1) alg->cell.col = 1;
     if (alg->cell.col > 8) alg->cell.col = 8;
+    if (alg->cell.row < 1) alg->cell.row = 1;
     if (alg->cell.row > 3) alg->cell.row = 3;
+
+    // toggle edit modes
+    if (  (data.controls & kNT_potButtonR)  )
+        alg->editMode = true;
+    else {
+        alg->editMode = false;
+        return;
+    }
+
+    int param;
+    int value;
+    int offset = (alg->cell.col-1) * 3 ;
+
+    switch (alg->cell.row) {
+        case 1:
+            param = kParamStep1Seq + offset;
+            value = round (5 * data.pots[2]);
+            NT_setParameterFromUi( NT_algorithmIndex( self ), param + NT_parameterOffset(), value );
+            break;
+        case 2:
+            param = kParamStep1Repeats + offset;
+            value = round (16 * data.pots[2]);
+            NT_setParameterFromUi( NT_algorithmIndex( self ), param + NT_parameterOffset(), value );
+            break;
+        case 3:
+            param = kParamStep1Switch + offset;
+            value = round (1 * data.pots[2]);
+            NT_setParameterFromUi( NT_algorithmIndex( self ), param + NT_parameterOffset(), value );
+        break;
+    }
 }
+
 
 bool drawSongSequencer (_NT_algorithm* self) {
     const SongSequencer* alg = static_cast<const SongSequencer*>(self);
@@ -510,8 +565,10 @@ bool drawSongSequencer (_NT_algorithm* self) {
 
     // LINE ONE - overall highSeqModule State
     NT_drawText (60, y, "State", color, kNT_textLeft, kNT_textTiny);
-    NT_intToString(buffer, alg->highSeqModule.getState());
-    NT_drawText(90, y, buffer, color, kNT_textLeft, kNT_textTiny);
+    if (alg->editMode)
+        NT_drawText(90, y, "EDIT", color, kNT_textLeft, kNT_textTiny);
+    else
+        NT_drawText(90, y, "Navi", color, kNT_textLeft, kNT_textTiny);
 
     // LINE ONE - Assigned Sequencer for masterStep or report -1
     NT_drawText (120, y, "ASEQ", color, kNT_textLeft, kNT_textTiny);
@@ -522,12 +579,13 @@ bool drawSongSequencer (_NT_algorithm* self) {
     else
         NT_drawText(150, y, "none", color, kNT_textLeft, kNT_textTiny);
 
+
     // LINE ONE - Beatcount for active sequencer
     NT_drawText (180, y, "Beat", color, kNT_textLeft, kNT_textTiny);
     if (masterStep >= 0) {
 
         if (assignedSeq >= 0 && assignedSeq < alg->highSeqModule.NUM_SEQUENCERS) {
-           NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatCount());
+           NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatCount() + 1);
            NT_drawText(210, y, buffer, color, kNT_textLeft, kNT_textTiny);
            NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatState());
            NT_drawText(240, y, buffer, color, kNT_textLeft, kNT_textTiny);
@@ -538,18 +596,6 @@ bool drawSongSequencer (_NT_algorithm* self) {
     else
         NT_drawText(210, y, "none", color, kNT_textLeft, kNT_textTiny);
 
-    // After LINE ONE DEBUGGING
-    /*
-    y += y_offset; // Move to a new line (e.g., y = 17)
-    NT_drawText(1, y, "BeatV ", color, kNT_textLeft, kNT_textTiny);
-    NT_floatToString(buffer, alg->lastBeatVoltage, 2); // Assuming NT_floatToString exists, or format manually
-    NT_drawText(30, y, buffer, color, kNT_textLeft, kNT_textTiny);
-    // DEBUGGING
-    NT_drawText(60, y, "BeatBus ", color, kNT_textLeft, kNT_textTiny);
-    NT_intToString(buffer, alg->v[kParamBeatInput]);
-    NT_drawText(90, y, buffer, color, kNT_textLeft, kNT_textTiny);
-    */
-
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
     int x_offset = 30;
     y += y_offset + 5;
@@ -557,7 +603,10 @@ bool drawSongSequencer (_NT_algorithm* self) {
     //NT_drawText (1, y, "STEP", 15, kNT_textLeft, kNT_textNormal);
     for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
         NT_intToString(buffer, step+1);
-        NT_drawText (x_offset * (step+1), y, buffer, color, kNT_textLeft, kNT_textNormal);
+        NT_drawText (x_offset * (step+1), y - 2, buffer, color, kNT_textLeft, kNT_textNormal);
+        if (step == masterStep)
+            NT_drawShapeI (kNT_circle, x_offset * (step+1) + 2, y-5, 6, 6);
+        //NT_drawShapeI (kNT_box, x_offset * (step+1), y, 6, 6);
     }
 
     // LINE THREE - Assigned Sequencer
@@ -604,7 +653,10 @@ bool drawSongSequencer (_NT_algorithm* self) {
     // draw a cursor
     cursor.x = alg->cell.col * x_offset + 2;
     cursor.y = y_offset + (alg->cell.row+1) * y_offset;
-    NT_drawShapeI (kNT_circle, cursor.x, cursor.y, 5, 5);
+    if (alg->editMode)  // Draw does not seem to be called whilst Pot Button is depressed
+        NT_drawShapeI (kNT_box, cursor.x, cursor.y, 5, 5);
+    else
+        NT_drawShapeI (kNT_circle, cursor.x, cursor.y, 6, 6);
 
     return true; //suppress native parameter line
 }
