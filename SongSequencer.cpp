@@ -150,16 +150,16 @@ static const _NT_parameter songSequencerParameters[] = {
     NT_PARAMETER_CV_INPUT("Seq E Gate Input", 0, 0)
     NT_PARAMETER_CV_INPUT("Seq E Reset Output", 0, 0)
 
-    {"Seq1 Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq1 Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq2 Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq2 Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq3 Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq3 Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq4 Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq4 Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq5 Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq5 Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq A Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq A Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq B Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq B Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq C Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq C Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq D Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq D Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq E Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq E Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
 
     {"Step1 Seq", 0, 4, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step1 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
@@ -542,43 +542,60 @@ bool drawSongSequencer (_NT_algorithm* self) {
     if (masterStep >= 0)
         assignedSeq = alg->highSeqModule.steps[masterStep].getAssignedSeq();
 
-    // LINE ONE - Master Step
-    NT_drawText (1, y, "M_Step:", color, kNT_textLeft, kNT_textTiny);
-    NT_intToString(buffer, masterStep);
-    NT_drawText(30, y, buffer, color, kNT_textLeft, kNT_textTiny);
-
     // LINE ONE - overall highSeqModule State
-    NT_drawText (60, y, "State", color, kNT_textLeft, kNT_textTiny);
-    if (alg->editMode)
-        NT_drawText(90, y, "EDIT", color, kNT_textLeft, kNT_textTiny);
+        if (alg->editMode)
+        NT_drawText(0, y, "EDIT", color, kNT_textLeft, kNT_textTiny);
     else
-        NT_drawText(90, y, "Navi", color, kNT_textLeft, kNT_textTiny);
+        NT_drawText(0, y, "Navi", color, kNT_textLeft, kNT_textTiny);
 
-    // LINE ONE - Assigned Sequencer for masterStep or report -1
-    NT_drawText (120, y, "ASEQ", color, kNT_textLeft, kNT_textTiny);
+    // LINE ONE - Bars for active sequencer
+    NT_drawText (30, y, "Bars/Bpb" , color, kNT_textLeft, kNT_textNormal);
     if (masterStep >= 0) {
-        NT_intToString(buffer, assignedSeq);
-        NT_drawText(150, y, buffer, color, kNT_textLeft, kNT_textTiny);
+        if (assignedSeq >= 0 && assignedSeq < alg->highSeqModule.NUM_SEQUENCERS) {
+            // Bars
+            NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbars());
+            NT_drawText(85, y, buffer, color, kNT_textLeft, kNT_textNormal);
+            NT_drawText(100, y, "/", color, kNT_textLeft, kNT_textNormal);
+            // Beats per bar
+            NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatsPerBar());
+            NT_drawText(105, y, buffer, color, kNT_textLeft, kNT_textNormal);
+
+        }
+        else NT_drawText(85, y, "--/--", color, kNT_textLeft, kNT_textTiny);
     }
     else
-        NT_drawText(150, y, "none", color, kNT_textLeft, kNT_textTiny);
+        NT_drawText(85, y, "--", color, kNT_textLeft, kNT_textTiny);
+
+    // LINE ONE - Current Bar
+    NT_drawText (145, y, "Bar", color, kNT_textLeft, kNT_textNormal);
+    if (masterStep >= 0) {
+        if (assignedSeq >= 0 && assignedSeq < alg->highSeqModule.NUM_SEQUENCERS) {
+            // bar = floor (current beat / beats per bar + 1
+            int bar = floor(alg->highSeqModule.sequencers[assignedSeq].getbeatCount() /
+                            alg->highSeqModule.sequencers[assignedSeq].getbeatsPerBar()) + 1;
+            NT_intToString(buffer, bar);
+            NT_drawText(170, y, buffer, color, kNT_textLeft, kNT_textNormal);
+        }
+        else NT_drawText(170, y, "--", color, kNT_textLeft, kNT_textTiny);
+    }
+    else
+        NT_drawText(170, y, "--", color, kNT_textLeft, kNT_textTiny);
 
 
     // LINE ONE - Beatcount for active sequencer
-    NT_drawText (180, y, "Beat", color, kNT_textLeft, kNT_textTiny);
+    NT_drawText (195, y, "Beat", color, kNT_textLeft, kNT_textNormal);
     if (masterStep >= 0) {
-
         if (assignedSeq >= 0 && assignedSeq < alg->highSeqModule.NUM_SEQUENCERS) {
-           NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatCount() + 1);
-           NT_drawText(210, y, buffer, color, kNT_textLeft, kNT_textTiny);
-           NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatState());
-           NT_drawText(240, y, buffer, color, kNT_textLeft, kNT_textTiny);
+           int beat = 1 + floor(alg->highSeqModule.sequencers[assignedSeq].getbeatCount() %
+                      alg->highSeqModule.sequencers[assignedSeq].getbeatsPerBar());
+           NT_intToString(buffer, beat);
+           NT_drawText(225, y, buffer, color, kNT_textLeft, kNT_textNormal);
         }
         else
-           NT_drawText(210, y, "invalid", color, kNT_textLeft, kNT_textTiny);
+           NT_drawText(2205, y, "--", color, kNT_textLeft, kNT_textTiny);
     }
     else
-        NT_drawText(210, y, "none", color, kNT_textLeft, kNT_textTiny);
+        NT_drawText(225, y, "--", color, kNT_textLeft, kNT_textTiny);
 
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
     int x_offset = 30;
