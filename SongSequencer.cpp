@@ -543,59 +543,68 @@ bool drawSongSequencer (_NT_algorithm* self) {
         assignedSeq = alg->highSeqModule.steps[masterStep].getAssignedSeq();
 
     // LINE ONE - overall highSeqModule State
-        if (alg->editMode)
-        NT_drawText(0, y, "EDIT", color, kNT_textLeft, kNT_textTiny);
-    else
-        NT_drawText(0, y, "Navi", color, kNT_textLeft, kNT_textTiny);
 
-    // LINE ONE - Bars for active sequencer
-    NT_drawText (30, y, "Bars/Bpb" , color, kNT_textLeft, kNT_textNormal);
+    // LINE ONE - Bars/Beats per Bar for active sequencer
+    NT_drawText (0, y, "Bars/Bpb" , color, kNT_textLeft, kNT_textNormal);
     if (masterStep >= 0) {
         if (assignedSeq >= 0 && assignedSeq < alg->highSeqModule.NUM_SEQUENCERS) {
             // Bars
             NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbars());
-            NT_drawText(85, y, buffer, color, kNT_textLeft, kNT_textNormal);
-            NT_drawText(100, y, "/", color, kNT_textLeft, kNT_textNormal);
+            NT_drawText(58, y, buffer, color, kNT_textLeft, kNT_textNormal);
+            NT_drawText(71, y, "/", color, kNT_textLeft, kNT_textNormal);
             // Beats per bar
             NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatsPerBar());
-            NT_drawText(105, y, buffer, color, kNT_textLeft, kNT_textNormal);
+            NT_drawText(77, y, buffer, color, kNT_textLeft, kNT_textNormal);
 
         }
-        else NT_drawText(85, y, "--/--", color, kNT_textLeft, kNT_textTiny);
+        else NT_drawText(58, y, "--/--", color, kNT_textLeft, kNT_textTiny);
     }
     else
-        NT_drawText(85, y, "--", color, kNT_textLeft, kNT_textTiny);
+        NT_drawText(58, y, "--", color, kNT_textLeft, kNT_textTiny);
+
+
+    // LINE ONE - Repeat countfor active sequencer
+    NT_drawText (96, y, "Rep" , color, kNT_textLeft, kNT_textNormal);
+    if (masterStep >= 0) {
+        if (assignedSeq >= 0 && assignedSeq < alg->highSeqModule.NUM_SEQUENCERS) {
+            NT_intToString(buffer, alg->highSeqModule.steps[masterStep].getCountRepeats());
+            NT_drawText(122, y, buffer, color, kNT_textLeft, kNT_textNormal);
+        }
+        else NT_drawText(122, y, "--", color, kNT_textLeft, kNT_textTiny);
+    }
+    else
+        NT_drawText(122, y, "--", color, kNT_textLeft, kNT_textTiny);
 
     // LINE ONE - Current Bar
-    NT_drawText (145, y, "Bar", color, kNT_textLeft, kNT_textNormal);
+    NT_drawText (141, y, "Bar", color, kNT_textLeft, kNT_textNormal);
     if (masterStep >= 0) {
         if (assignedSeq >= 0 && assignedSeq < alg->highSeqModule.NUM_SEQUENCERS) {
             // bar = floor (current beat / beats per bar + 1
             int bar = floor(alg->highSeqModule.sequencers[assignedSeq].getbeatCount() /
                             alg->highSeqModule.sequencers[assignedSeq].getbeatsPerBar()) + 1;
             NT_intToString(buffer, bar);
-            NT_drawText(170, y, buffer, color, kNT_textLeft, kNT_textNormal);
+            NT_drawText(167, y, buffer, color, kNT_textLeft, kNT_textNormal);
         }
-        else NT_drawText(170, y, "--", color, kNT_textLeft, kNT_textTiny);
+        else NT_drawText(167, y, "--", color, kNT_textLeft, kNT_textTiny);
     }
     else
-        NT_drawText(170, y, "--", color, kNT_textLeft, kNT_textTiny);
+        NT_drawText(167, y, "--", color, kNT_textLeft, kNT_textTiny);
 
 
     // LINE ONE - Beatcount for active sequencer
-    NT_drawText (195, y, "Beat", color, kNT_textLeft, kNT_textNormal);
+    NT_drawText (186, y, "Beat", color, kNT_textLeft, kNT_textNormal);
     if (masterStep >= 0) {
         if (assignedSeq >= 0 && assignedSeq < alg->highSeqModule.NUM_SEQUENCERS) {
            int beat = 1 + floor(alg->highSeqModule.sequencers[assignedSeq].getbeatCount() %
                       alg->highSeqModule.sequencers[assignedSeq].getbeatsPerBar());
            NT_intToString(buffer, beat);
-           NT_drawText(225, y, buffer, color, kNT_textLeft, kNT_textNormal);
+           NT_drawText(218, y, buffer, color, kNT_textLeft, kNT_textNormal);
         }
         else
-           NT_drawText(2205, y, "--", color, kNT_textLeft, kNT_textTiny);
+           NT_drawText(218, y, "--", color, kNT_textLeft, kNT_textTiny);
     }
     else
-        NT_drawText(225, y, "--", color, kNT_textLeft, kNT_textTiny);
+        NT_drawText(218, y, "--", color, kNT_textLeft, kNT_textTiny);
 
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
     int x_offset = 30;
