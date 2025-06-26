@@ -20,7 +20,7 @@ namespace CLC_Synths {
 	public:
 		// const
 		static const int NUM_STEPS = 8;       // number of steps in the master sequencer
-		static const int NUM_SEQUENCERS = 5; // number of sequencers being sequenced
+		static const int NUM_SEQUENCERS = 8; // number of sequencers being sequenced
 		static const int MAX_REPEATS = 16;    // max number of repeats allowed
 	private:
 		// state
