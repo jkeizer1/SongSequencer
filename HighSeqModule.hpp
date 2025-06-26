@@ -82,6 +82,35 @@ namespace CLC_Synths {
 		else return (-1);
 	}
 
+
+	int HighSeqModule::findNextStep() const {
+		int step = masterStep;
+		int firstSwitch = -1;
+
+		if (masterStep == -1) {
+			firstSwitch = findFirstSwitch();
+			if (firstSwitch == -1)
+				return (-1);
+			else
+				return (firstSwitch);
+		}
+
+		bool found = false;
+		if (++step >= NUM_STEPS) step = 0; // circular
+		while (!found && (step != masterStep)) {
+			if (steps[step].getOnOffSwitch() == SWITCHSTATE::ON) {
+				found = true;
+				return step;
+			}
+			if (++step >= NUM_STEPS) step = 0;
+		}
+		// If no other step is ON, check if current masterStep is ON
+		if (steps[masterStep].getOnOffSwitch() == SWITCHSTATE::ON)
+			return masterStep;
+		return -1; // No active steps found
+	}
+
+/*
 	int HighSeqModule::findNextStep() const {
 		int step = masterStep;
 		int firstSwitch = -1;
@@ -108,9 +137,10 @@ namespace CLC_Synths {
 		}
 		return (masterStep);  // masterStep is the ONLY step on
 	}
-
+*/
     void HighSeqModule::reset() {
-        masterStep = 0; // ::process will determine the correct starting step
+        //masterStep = 0; // ::process will determine the correct starting step
+        masterStep = findNextStep(); // Set to first active step or -1 if none
         for (int s = 0; s < NUM_SEQUENCERS; s++) 
             sequencers[s].reset();
     }

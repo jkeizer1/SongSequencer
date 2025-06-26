@@ -200,28 +200,28 @@ static const _NT_parameter songSequencerParameters[] = {
     {"Seq H Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq H Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
 
-    {"Step1 Seq", 0, 4, 0, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Step1 Seq", 0, 7, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step1 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step1 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step2 Seq", 0, 4, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Step2 Seq", 0, 7, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step2 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step2 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step3 Seq", 0, 4, 2, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Step3 Seq", 0, 7, 2, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step3 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step3 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step4 Seq", 0, 4, 3, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Step4 Seq", 0, 7, 3, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step4 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step4 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step5 Seq", 0, 4, 4, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Step5 Seq", 0, 7, 4, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step5 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step5 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step6 Seq", 0, 4, 0, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Step6 Seq", 0, 7, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step6 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step6 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step7 Seq", 0, 4, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Step7 Seq", 0, 7, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step7 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step7 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step8 Seq", 0, 4, 2, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Step8 Seq", 0, 7, 2, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step8 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step8 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch}
 };
@@ -419,17 +419,17 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
     alg->sequencerGateInput[4] = self->v[kParamSeq5GateInput] - 1;
     alg->sequencerResetOutput[4] = self->v[kParamSeq5ResetOutput] - 1;
 
-    alg->sequencerCVInput[5] = self->v[kParamSeq5CVInput] - 1;
-    alg->sequencerGateInput[5] = self->v[kParamSeq5GateInput] - 1;
-    alg->sequencerResetOutput[5] = self->v[kParamSeq5ResetOutput] - 1;
+    alg->sequencerCVInput[5] = self->v[kParamSeq6CVInput] - 1;
+    alg->sequencerGateInput[5] = self->v[kParamSeq6GateInput] - 1;
+    alg->sequencerResetOutput[5] = self->v[kParamSeq6ResetOutput] - 1;
 
-    alg->sequencerCVInput[6] = self->v[kParamSeq5CVInput] - 1;
-    alg->sequencerGateInput[6] = self->v[kParamSeq5GateInput] - 1;
-    alg->sequencerResetOutput[6] = self->v[kParamSeq5ResetOutput] - 1;
+    alg->sequencerCVInput[6] = self->v[kParamSeq7CVInput] - 1;
+    alg->sequencerGateInput[6] = self->v[kParamSeq7GateInput] - 1;
+    alg->sequencerResetOutput[6] = self->v[kParamSeq7ResetOutput] - 1;
 
-    alg->sequencerCVInput[7] = self->v[kParamSeq5CVInput] - 1;
-    alg->sequencerGateInput[7] = self->v[kParamSeq5GateInput] - 1;
-    alg->sequencerResetOutput[7] = self->v[kParamSeq5ResetOutput] - 1;
+    alg->sequencerCVInput[7] = self->v[kParamSeq8CVInput] - 1;
+    alg->sequencerGateInput[7] = self->v[kParamSeq8GateInput] - 1;
+    alg->sequencerResetOutput[7] = self->v[kParamSeq8ResetOutput] - 1;
 
 
     // Get pointers to input and output memory locations
@@ -459,7 +459,7 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
         if (masterStep < 0) {
             gateOutput[frame] = 0.0f;
             pitchOutput[frame] = 0.0f;
-            return;
+            continue;
         }
 
         // Find the current sequencer based on the step
@@ -467,7 +467,7 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
         if (sequencer < 0 || sequencer > alg->highSeqModule.NUM_SEQUENCERS) {
             gateOutput[frame] = 0.0f;
             pitchOutput[frame] = 0.0f;
-            return;
+            continue;
         }
 
         // pitch cv input to pitch output
@@ -692,7 +692,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
     // LINE THREE - Assigned Sequencer
     y += y_offset;
     NT_drawText (1, y, "SEQ ", color, kNT_textLeft, kNT_textNormal);
-    char labels[] = "ABCDE";
+    char labels[] = "ABCDEFGH";
     for (int step = 0; step < alg->highSeqModule.NUM_STEPS; step++) {
         int seq = alg->highSeqModule.steps[step].getAssignedSeq();
         buffer[0] = labels[seq];
@@ -731,6 +731,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
     }
 
     // draw a cursor
+
     cursor.x = alg->cell.col * x_offset + 2;
     cursor.y = y_offset + (alg->cell.row+1) * y_offset;
     if (alg->editMode)  // Draw does not seem to be called whilst Pot Button is depressed
