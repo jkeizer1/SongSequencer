@@ -164,6 +164,19 @@ static const char* const enumStringsSwitch[] = {
     nullptr
 };
 
+// Enum strings for Output Mode
+static const char* const enumStringsSequencers[] = {
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    nullptr  // Null terminator
+};
+
 // Parameter definitions
 static const _NT_parameter songSequencerParameters[] = {
     NT_PARAMETER_AUDIO_INPUT("Reset Input", 0, 1)   /* 0 is none */
@@ -238,28 +251,35 @@ static const _NT_parameter songSequencerParameters[] = {
     {"Seq H Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq H Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
 
-    {"Step1 Seq", 0, 7, 0, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Step1 Seq", 0, 7, 0, kNT_unitEnum, kNT_scalingNone, enumStringsSequencers },
     {"Step1 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step1 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step2 Seq", 0, 7, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+
+    {"Step2 Seq", 0, 7, 0, kNT_unitEnum, kNT_scalingNone, enumStringsSequencers },
     {"Step2 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step2 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step3 Seq", 0, 7, 2, kNT_unitNone, kNT_scalingNone, nullptr},
+
+    {"Step3 Seq", 0, 7, 0, kNT_unitEnum, kNT_scalingNone, enumStringsSequencers },
     {"Step3 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step3 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step4 Seq", 0, 7, 3, kNT_unitNone, kNT_scalingNone, nullptr},
+
+    {"Step4 Seq", 0, 7, 0, kNT_unitEnum, kNT_scalingNone, enumStringsSequencers },
     {"Step4 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step4 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step5 Seq", 0, 7, 4, kNT_unitNone, kNT_scalingNone, nullptr},
+
+    {"Step5 Seq", 0, 7, 0, kNT_unitEnum, kNT_scalingNone, enumStringsSequencers },
     {"Step5 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step5 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step6 Seq", 0, 7, 0, kNT_unitNone, kNT_scalingNone, nullptr},
+
+    {"Step6 Seq", 0, 7, 0, kNT_unitEnum, kNT_scalingNone, enumStringsSequencers },
     {"Step6 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step6 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step7 Seq", 0, 7, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+
+    {"Step7 Seq", 0, 7, 0, kNT_unitEnum, kNT_scalingNone, enumStringsSequencers },
     {"Step7 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step7 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch},
-    {"Step8 Seq", 0, 7, 2, kNT_unitNone, kNT_scalingNone, nullptr},
+
+    {"Step8 Seq", 0, 7, 0, kNT_unitEnum, kNT_scalingNone, enumStringsSequencers },
     {"Step8 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step8 Switch", 0, 1, 1, kNT_unitEnum, kNT_scalingNone, enumStringsSwitch}
 };
