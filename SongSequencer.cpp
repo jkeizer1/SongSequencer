@@ -27,9 +27,9 @@ struct SongSequencer : public _NT_algorithm {
 
     int sequencerCVInput[HighSeqModule::NUM_SEQUENCERS];      // CV input bus index for each sequencer (-1 = unassigned)
     int sequencerGateInput[HighSeqModule::NUM_SEQUENCERS];    // Gate input bus index for each sequencer (-1 = unassigned)
-
     int sequencerResetOutput[HighSeqModule::NUM_SEQUENCERS];    // Reset output bus index for each sequencer (-1 = unassigned)
-
+    int sequencerTransposeInput[HighSeqModule::NUM_SEQUENCERS];    // Transpose input bus index for each sequencer (-1 = unassigned)
+    int sequencerCVAssignableInput[HighSeqModule::NUM_SEQUENCERS];    // Assignable CV input bus for each sequencer (-1 = unassigned)
     bool editMode;
 
     _NT_uiData lastUiData; // Store last UI data for debugging
@@ -48,38 +48,55 @@ enum {
     kParamBeatInput,
     kParamPitchCVOutput,
     kParamGateOutput,
+    kParamAssignableOutput,
 
     kParamSeq1CVInput,
     kParamSeq1GateInput,
     kParamSeq1ResetOutput,
+    kParamSeq1TransposeInput,
+    kParamSeq1AssignableCVInput,
 
     kParamSeq2CVInput,
     kParamSeq2GateInput,
     kParamSeq2ResetOutput,
+    kParamSeq2TransposeInput,
+    kParamSeq2AssignableCVInput,
 
     kParamSeq3CVInput,
     kParamSeq3GateInput,
     kParamSeq3ResetOutput,
+    kParamSeq3TransposeInput,
+    kParamSeq3AssignableCVInput,
 
     kParamSeq4CVInput,
     kParamSeq4GateInput,
     kParamSeq4ResetOutput,
+    kParamSeq4TransposeInput,
+    kParamSeq4AssignableCVInput,
 
     kParamSeq5CVInput,
     kParamSeq5GateInput,
     kParamSeq5ResetOutput,
+    kParamSeq5TransposeInput,
+    kParamSeq5AssignableCVInput,
 
     kParamSeq6CVInput,
     kParamSeq6GateInput,
     kParamSeq6ResetOutput,
+    kParamSeq6TransposeInput,
+    kParamSeq6AssignableCVInput,
 
     kParamSeq7CVInput,
     kParamSeq7GateInput,
     kParamSeq7ResetOutput,
+    kParamSeq7TransposeInput,
+    kParamSeq7AssignableCVInput,
 
     kParamSeq8CVInput,
     kParamSeq8GateInput,
     kParamSeq8ResetOutput,
+    kParamSeq8TransposeInput,
+    kParamSeq8AssignableCVInput,
 
     kParamSeq1BeatsPerBar,
     kParamSeq1Bars,
@@ -150,38 +167,56 @@ static const _NT_parameter songSequencerParameters[] = {
     NT_PARAMETER_AUDIO_INPUT("Beat Input", 0, 2)
     NT_PARAMETER_CV_OUTPUT("Pitch CV Output", 0, 1)
     NT_PARAMETER_CV_OUTPUT("Gate Output", 0, 2)
+    NT_PARAMETER_CV_OUTPUT("Assignable Output", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq A CV Input", 0, 5)
-    NT_PARAMETER_CV_INPUT("Seq A Gate Input", 0, 6)
-    NT_PARAMETER_CV_INPUT("Seq A Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("A CV Input", 0, 5)
+    NT_PARAMETER_CV_INPUT("A Gate Input", 0, 6)
+    NT_PARAMETER_CV_INPUT("A Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("A Transpose Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("A Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq B CV Input", 0, 7)
-    NT_PARAMETER_CV_INPUT("Seq B Gate Input", 0, 8)
-    NT_PARAMETER_CV_INPUT("Seq B Reset Output", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq C CV Input", 0, 9)
-    NT_PARAMETER_CV_INPUT("Seq C Gate Input", 0, 10)
-    NT_PARAMETER_CV_INPUT("Seq C Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("B CV Input", 0, 7)
+    NT_PARAMETER_CV_INPUT("B Gate Input", 0, 8)
+    NT_PARAMETER_CV_INPUT("B Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("B Transpose Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("B Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq D CV Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq D Gate Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq D Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("C CV Input", 0, 9)
+    NT_PARAMETER_CV_INPUT("C Gate Input", 0, 10)
+    NT_PARAMETER_CV_INPUT("C Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("C Transpose Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("C Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq E CV Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq E Gate Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq E Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("D CV Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("D Gate Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("D Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("D Transpose Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("D Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq F CV Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq F Gate Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq F Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("E CV Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("E Gate Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("E Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("E Transpose Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("E Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq G CV Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq G Gate Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq G Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("F CV Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("F Gate Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("F Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("F Transpose Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("F Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("Seq H CV Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq H Gate Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("Seq H Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("G CV Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("G Gate Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("G Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("G Transpose Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("G Assignable CV Input", 0, 0)
+
+    NT_PARAMETER_CV_INPUT("H CV Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("H Gate Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("H Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("H Transpose Input", 0, 0)
+    NT_PARAMETER_CV_INPUT("H Assignable CV Input", 0, 0)
 
     {"Seq A Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq A Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
@@ -231,40 +266,58 @@ static const uint8_t routingPageParams[] = {
     kParamResetInput,
     kParamBeatInput,
     kParamPitchCVOutput,
-    kParamGateOutput
+    kParamGateOutput,
+    kParamAssignableOutput,
 };
 static const uint8_t sequencerAssignPageParams[] = {
     kParamSeq1CVInput,
     kParamSeq1GateInput,
     kParamSeq1ResetOutput,
+    kParamSeq1TransposeInput,
+    kParamSeq1AssignableCVInput,
 
     kParamSeq2CVInput,
     kParamSeq2GateInput,
     kParamSeq2ResetOutput,
+    kParamSeq2TransposeInput,
+    kParamSeq2AssignableCVInput,
 
     kParamSeq3CVInput,
     kParamSeq3GateInput,
     kParamSeq3ResetOutput,
+    kParamSeq3TransposeInput,
+    kParamSeq3AssignableCVInput,
 
     kParamSeq4CVInput,
     kParamSeq4GateInput,
     kParamSeq4ResetOutput,
+    kParamSeq4TransposeInput,
+    kParamSeq4AssignableCVInput,
 
     kParamSeq5CVInput,
     kParamSeq5GateInput,
-    kParamSeq1ResetOutput,
+    kParamSeq5ResetOutput,
+    kParamSeq5TransposeInput,
+    kParamSeq5AssignableCVInput,
 
     kParamSeq6CVInput,
     kParamSeq6GateInput,
     kParamSeq6ResetOutput,
+    kParamSeq6TransposeInput,
+    kParamSeq6AssignableCVInput,
 
     kParamSeq7CVInput,
     kParamSeq7GateInput,
     kParamSeq7ResetOutput,
+    kParamSeq7TransposeInput,
+    kParamSeq7AssignableCVInput,
 
     kParamSeq8CVInput,
     kParamSeq8GateInput,
-    kParamSeq8ResetOutput
+    kParamSeq8ResetOutput,
+    kParamSeq8TransposeInput,
+    kParamSeq8AssignableCVInput
+
 };
 static const uint8_t sequencerConfigPageParams[] = {
     kParamSeq1BeatsPerBar,
@@ -397,46 +450,63 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
     int beatBusIN = self->v[kParamBeatInput] - 1;
     int pitchBusOUT = self->v[kParamPitchCVOutput] - 1;
     int gateBusOUT = self->v[kParamGateOutput] - 1;
+    int assignableBusOUT = self->v[kParamAssignableOutput] - 1;
 
     // Update sequencer input and output bus assignments
     alg->sequencerCVInput[0] = self->v[kParamSeq1CVInput] - 1;
     alg->sequencerGateInput[0] = self->v[kParamSeq1GateInput] - 1;
     alg->sequencerResetOutput[0] = self->v[kParamSeq1ResetOutput] - 1;
+    alg->sequencerTransposeInput[0] = self->v[kParamSeq1TransposeInput] - 1;
+    alg->sequencerCVAssignableInput[0] = self->v[kParamSeq1AssignableCVInput] - 1;
 
     alg->sequencerCVInput[1] = self->v[kParamSeq2CVInput] - 1;
     alg->sequencerGateInput[1] = self->v[kParamSeq2GateInput] - 1;
     alg->sequencerResetOutput[1] = self->v[kParamSeq2ResetOutput] - 1;
+    alg->sequencerTransposeInput[1] = self->v[kParamSeq2TransposeInput] - 1;
+    alg->sequencerCVAssignableInput[1] = self->v[kParamSeq2AssignableCVInput] - 1;
 
     alg->sequencerCVInput[2] = self->v[kParamSeq3CVInput] - 1;
     alg->sequencerGateInput[2] = self->v[kParamSeq3GateInput] - 1;
     alg->sequencerResetOutput[2] = self->v[kParamSeq3ResetOutput] - 1;
+    alg->sequencerTransposeInput[2] = self->v[kParamSeq3TransposeInput] - 1;
+    alg->sequencerCVAssignableInput[2] = self->v[kParamSeq3AssignableCVInput] - 1;
 
     alg->sequencerCVInput[3] = self->v[kParamSeq4CVInput] - 1;
     alg->sequencerGateInput[3] = self->v[kParamSeq4GateInput] - 1;
     alg->sequencerResetOutput[3] = self->v[kParamSeq4ResetOutput] - 1;
+    alg->sequencerTransposeInput[3] = self->v[kParamSeq4TransposeInput] - 1;
+    alg->sequencerCVAssignableInput[3] = self->v[kParamSeq4AssignableCVInput] - 1;
 
     alg->sequencerCVInput[4] = self->v[kParamSeq5CVInput] - 1;
     alg->sequencerGateInput[4] = self->v[kParamSeq5GateInput] - 1;
     alg->sequencerResetOutput[4] = self->v[kParamSeq5ResetOutput] - 1;
+    alg->sequencerTransposeInput[4] = self->v[kParamSeq5TransposeInput] - 1;
+    alg->sequencerCVAssignableInput[4] = self->v[kParamSeq5AssignableCVInput] - 1;
 
     alg->sequencerCVInput[5] = self->v[kParamSeq6CVInput] - 1;
     alg->sequencerGateInput[5] = self->v[kParamSeq6GateInput] - 1;
     alg->sequencerResetOutput[5] = self->v[kParamSeq6ResetOutput] - 1;
+    alg->sequencerTransposeInput[5] = self->v[kParamSeq6TransposeInput] - 1;
+    alg->sequencerCVAssignableInput[5] = self->v[kParamSeq6AssignableCVInput] - 1;
 
     alg->sequencerCVInput[6] = self->v[kParamSeq7CVInput] - 1;
     alg->sequencerGateInput[6] = self->v[kParamSeq7GateInput] - 1;
     alg->sequencerResetOutput[6] = self->v[kParamSeq7ResetOutput] - 1;
+    alg->sequencerTransposeInput[6] = self->v[kParamSeq7TransposeInput] - 1;
+    alg->sequencerCVAssignableInput[7] = self->v[kParamSeq7AssignableCVInput] - 1;
 
     alg->sequencerCVInput[7] = self->v[kParamSeq8CVInput] - 1;
     alg->sequencerGateInput[7] = self->v[kParamSeq8GateInput] - 1;
     alg->sequencerResetOutput[7] = self->v[kParamSeq8ResetOutput] - 1;
-
+    alg->sequencerTransposeInput[7] = self->v[kParamSeq8TransposeInput] - 1;
+    alg->sequencerCVAssignableInput[7] = self->v[kParamSeq8AssignableCVInput] - 1;
 
     // Get pointers to input and output memory locations
     float* resetInput = busFrames + resetBusIN * numFrames;
     float* beatInput = busFrames + beatBusIN * numFrames;
     float* pitchOutput = busFrames + pitchBusOUT * numFrames;
     float* gateOutput = busFrames + gateBusOUT * numFrames;
+    float* assignableOutput = busFrames + assignableBusOUT * numFrames;
 
     int masterStep;
 
@@ -479,13 +549,28 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
         }
 
         // pitch cv input to pitch output
-        float* cvInput; // used for both pitch and gate inputs
+        float* cvInput; // used for both cv and gate inputs
         if (alg->sequencerCVInput[sequencer] >= 0 && alg->sequencerCVInput[sequencer] < 28) {
+
+            // get transpose input
+            cvInput = busFrames + alg->sequencerTransposeInput[sequencer] * numFrames;
+            float transposeInputval = cvInput[frame];
+
             cvInput = busFrames + alg->sequencerCVInput[sequencer] * numFrames;
             float pitch = cvInput[frame];
-            pitchOutput[frame] = pitch;
+            pitchOutput[frame] = pitch + transposeInputval;;
         } else {
             pitchOutput[frame] = 0.0f; // Fallback if bus is invalid
+        }
+
+        // assignable cv input to assignable cv output
+        if (alg->sequencerCVInput[sequencer] >= 0 && alg->sequencerCVInput[sequencer] < 28) {
+            // get assignable CV input
+            cvInput = busFrames + alg->sequencerCVAssignableInput[sequencer] * numFrames;
+            float assignableCVvalue = cvInput[frame];
+            assignableOutput[frame] = assignableCVvalue;
+        } else {
+            assignableOutput[frame] = 0.0f; // Fallback if bus is invalid
         }
 
         // gate cv input to gate output
