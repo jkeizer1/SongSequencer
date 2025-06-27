@@ -33,6 +33,38 @@ In addition there is a master Reset Input that sends a Reset to all sequencers c
 - Assignable CV Output (pass any CV from the input sequencer for a step to an output)
 - { to do: add Master transpose input }
 
+## Custom User Interface
+
+### Display Line ONE
+- TOP LINE
+-- Shows Bars and Beats per Bar (Bpb) for the active step
+-- Rep n; shows the current repeat count of the active step
+-- Bar shows the current bar of the active step
+-- Beats shows the curent beat within the bar
+
+### Display Line TWO
+- STEPS TITLES
+-- Shows the step numbers from 1..8 (bright background)
+
+### Display Lines THREE, FOUR, FIVE
+- Sequencers
+-- SEQ shows the assigned sequencer A..H for the step
+-- REP shows the number of repeats for the step (0 means run the step once, 1 means repeat it once, etc.)
+-- On shows whether the step is on or off ("--"); 
+
+### Navigation
+- Turn left encoder to navigate horizontally across steps
+- Turn right encoder to navigate vertically across rows (Seq Row - assigned sequencer, REP - # of repeats for the step, On - set the step on or off ("-"))
+
+### Change Values
+- Press and turn pot right to change value
+- Click it to enter last value used (it is a pot without catch behavior)
+
+### Tricks
+- Change SEQ to some unassigned sequencer, and configure its bars/beats per bars: you will get "silence" or a rest step
+- Change up the SEQ assignments, repeats, and ON OFF live to vary your song
+- Use a sequencer to generate a transpose value as input
+
 ## Step Parameters (per 8) : Managed by a custom UI for playability
 
 - Assigned Sequencer (indicated by number 0..7) { to do: show A-H instead }
