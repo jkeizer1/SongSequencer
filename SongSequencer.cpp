@@ -536,6 +536,7 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
         if (masterStep < 0) {
             gateOutput[frame] = 0.0f;
             pitchOutput[frame] = 0.0f;
+            assignableOutput[frame] = 0.0f;
             continue;
         }
 
@@ -544,6 +545,7 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
         if (sequencer < 0 || sequencer > alg->highSeqModule.NUM_SEQUENCERS) {
             gateOutput[frame] = 0.0f;
             pitchOutput[frame] = 0.0f;
+            assignableOutput[frame] = 0.0f;
             continue;
         }
 /*

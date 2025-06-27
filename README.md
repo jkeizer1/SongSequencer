@@ -1,15 +1,37 @@
 # SongSequencer
+
 Make a song by sequencing other sequencers.  Made for the Expert Sleepers Disting NT.
 
 ## Overview
 
 Song Sequencer is used to sequence other sequencers forming a song.  Think of it as a 8:1 switch for sequencers; up to 8 input sequencers are switched to the master outputs at the right time.
 
-The UI displays 8 song steps where each step is assigned an input sequencer, a repeat value, and an on|off switch.   Song Sequencer advances through the steps and outputs pitch, gate, and an assignable control voltage (CV) value from the sequencer of the active step.  The assignable control voltage can be anything but most commonly would be used for something like velocity. This value can be routed to any output.
+The **Custom UI** displays 8 song steps in a grid where each step has:
 
-You can think of each step as being a part of a song, with an associated input sequencer.  That input sequencer can be some Eurorack module, external sequencer, or the Disting NT's Step Sequencers. The main limitation will be the number of inputs and outputs available. Ideally, that sequencer will have a reset input.
+- Assigned Input sequencer (A through H)
+- Repeat value (0 through 16)
+- On|off step switch
+- **Navigate** the grid with the left and right encoders (bottom row, not the top row of Pots)
+- **Change** values by pressing and turning the Right Pot (top row); ie. press and hold.
 
-Song Sequencer uses a master **Beat (clock)** input common across all sequencers.  It is used to count beats and advance to the next sequencer at the right time.  Each sequencer has a **Bars** parameter and a **Beats Per Bar** parameter.   For example, if Bars = 1, and Beats per Bar = 4, Song Sequencer will count Beats from the master beat input until it reaches 4, and then it will advance (switch) to the next sequencer with an ON switch. Of course, sequencers can output CV/Gates in any timing not just "on the beat clock".
+Song Sequencer outputs the following for the current step:
+
+- Pitch (with optional added Transpose CV)
+- Gate, 
+- Assignable control voltage (CV) (optional) 
+- Reset trigger output (optional)
+
+The assignable control voltage can be anything but most commonly would be used for something like velocity. 
+
+## How It Works
+
+You can think of each step as being a part of a song, with an associated input sequencer.
+
+Song Sequencer uses a master **Beat (clock)** input common across all sequencers.  The beat clock is used to advance to the next step by counting beats.
+
+- Each sequencer has a **Bars** parameter and a **Beats Per Bar** parameter.   For example, if Bars = 1, and Beats per Bar = 4, Song Sequencer will count beats from the master beat input until it reaches 4, and then it will advance to the next sequencer with an ON switch. 
+- Of course, sequencers can output CV/Gates in any timing not just "on the beat clock". 
+- Maximum 256 beats each sequence.
 
 Each step has a **repeat control** allowing a sequence to be repeated up to 16 times on a step.  If it is set to zero, the sequencer for that step is run once and then Song Sequencer advances to the next step.  If it is set to 1..16 it will additionally repeat that sequencer that number of times.
 
@@ -17,9 +39,9 @@ Each of the 8 steps has a **on | off Switch** that determines if Song Sequencer 
 
 Each sequencer supports a **Transpose** input; the transpose CV value is added to the Pitch CV output. This is not quantized.
 
-At the end of the sequence, Sound Sequencer issues a **Reset output** that can be routed to the Reset input on a sequencer so that sequencers start on time.
+At the end of each sequence, Sound Sequencer issues a **Reset output** that can be routed to the Reset input on the sequencers so that the next sequencer starts on time.
 
-In addition there is a master Reset Input that sends a Reset to all sequencers configured to receive it as well as resetting Song Sequencer to the first step that is ON (it looks from step 1).
+In addition there is a master Reset Input that resets the internal state of SongSequencer, and sends a reset to the next (first) real sequencer.
 
 ## Key Features
 
@@ -31,7 +53,6 @@ In addition there is a master Reset Input that sends a Reset to all sequencers c
 - Pitch CV Output
 - Gate Output
 - Assignable CV Output (pass any CV from the input sequencer for a step to an output)
-- { to do: add Master transpose input }
 
 ## Custom User Interface
 
@@ -85,6 +106,7 @@ SEQUENCER GRID
 These parameters let you control how many beats from the master beat input are used before advancing to the next sequencer. Match these setting to the input sequencers. 
 - Bars
 - Beats per Bar
+- Maximums: 16 Bars * 16 Beats per Bar = 256 beats
 
 Example: A typical 16 step sequencer could be set as:
 A) 1 Bar, 16 steps per Bar = 16 beats
