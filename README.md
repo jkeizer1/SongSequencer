@@ -7,7 +7,7 @@ Song Sequencer is used to sequence other sequencers forming a song.  Think of it
 
 The UI displays 8 song steps where each step is assigned an input sequencer, a repeat value, and an on|off switch.   Song Sequencer advances through the steps and outputs pitch, gate, and an assignable control voltage (CV) value from the sequencer of the active step.  The assignable control voltage can be anything but most commonly would be used for something like velocity. This value can be routed to any output.
 
-You can think of each step as being a part of a song, with an associated input sequencer.  That input sequencer can be some Eurorack module, external sequencer, or the Disting NT's Step Sequencers. The main limitations will be the number of inputs and outputs available.
+You can think of each step as being a part of a song, with an associated input sequencer.  That input sequencer can be some Eurorack module, external sequencer, or the Disting NT's Step Sequencers. The main limitation will be the number of inputs and outputs available. Ideally, that sequencer will have a reset input.
 
 Song Sequencer uses a master **Beat (clock)** input common across all sequencers.  It is used to count beats and advance to the next sequencer at the right time.  Each sequencer has a **Bars** parameter and a **Beats Per Bar** parameter.   For example, if Bars = 1, and Beats per Bar = 4, Song Sequencer will count Beats from the master beat input until it reaches 4, and then it will advance (switch) to the next sequencer with an ON switch. Of course, sequencers can output CV/Gates in any timing not just "on the beat clock".
 
