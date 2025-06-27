@@ -35,7 +35,7 @@ struct SongSequencer : public _NT_algorithm {
     bool resetdebug;
     bool resetdebugever;
 
-    _NT_uiData lastUiData; // Store last UI data for debugging
+//    _NT_uiData lastUiData; // Store last UI data for debugging
 
     float lastBeatVoltage; // for debugging
     _cell cell;
@@ -562,6 +562,7 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
 
         // output reset at active sequencer's sequence ((beatCount >= targetBeats))
         if (sequencer >= 0 && sequencer < alg->highSeqModule.NUM_SEQUENCERS) {
+
             if (alg->highSeqModule.sequencers[sequencer].getResetStatus() == SEQRESET::RESET) {
                 if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
                     float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
@@ -665,7 +666,7 @@ uint32_t hasCustomUI (_NT_algorithm* self) {
 void customUI (_NT_algorithm* self, const _NT_uiData& data) {
     SongSequencer* alg = static_cast<SongSequencer*>(self);
 
-    alg->lastUiData = data; // Store UI data for debugging in draw
+//  alg->lastUiData = data; // Store UI data for debugging in draw
 
     // left encoder - horozontal cursor
     if (data.encoders[0] != 0)
@@ -804,6 +805,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
 
 
     // debug reset
+    /*
     if (alg->resetdebug) {
         NT_drawText (230, y, "R", color, kNT_textLeft, kNT_textNormal);
     } else {
@@ -815,8 +817,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
     }
     else
         NT_drawText (243, y, "N", color, kNT_textLeft, kNT_textNormal);
-
-
+    */
 
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
     int x_offset = 30;

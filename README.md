@@ -64,6 +64,7 @@ SEQUENCER GRID
 - Change SEQ to some unassigned sequencer, and configure its bars/beats per bars: you will get "silence" or a rest step
 - Change up the SEQ assignments, repeats, and ON OFF live to vary your song
 - Use a sequencer to generate a transpose value as input
+- Set the bars/beats per bar to be shorter than your sequencer; you can use the standard parameter screens to dynamically play from 1 to n sequencer steps
 
 ## Step Parameters (per 8) : Managed by a custom UI for playability
 
