@@ -36,18 +36,18 @@ In addition there is a master Reset Input that sends a Reset to all sequencers c
 ## Custom User Interface
 
 ### Display Line ONE
-- TOP LINE
+TOP LINE
 - Shows Bars and Beats per Bar (Bpb) for the active step
 - Rep n; shows the current repeat count of the active step
 - Bar shows the current bar of the active step
 - Beats shows the curent beat within the bar
 
 ### Display Line TWO
-- STEPS TITLES
+STEPS TITLES
 - Shows the step numbers from 1..8 (bright background)
 
 ### Display Lines THREE, FOUR, FIVE
-- SEQUENCER GRID
+SEQUENCER GRID
 - SEQ shows the assigned sequencer A..H for the step
 - REP shows the number of repeats for the step (0 means run the step once, 1 means repeat it once, etc.)
 - On shows whether the step is on or off ("--"); 
