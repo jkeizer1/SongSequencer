@@ -32,6 +32,9 @@ struct SongSequencer : public _NT_algorithm {
     int sequencerCVAssignableInput[HighSeqModule::NUM_SEQUENCERS];    // Assignable CV input bus for each sequencer (-1 = unassigned)
     bool editMode;
 
+    bool resetdebug;
+    bool resetdebugever;
+
     _NT_uiData lastUiData; // Store last UI data for debugging
 
     float lastBeatVoltage; // for debugging
@@ -415,6 +418,10 @@ _NT_algorithm* constructSongSequencer(const _NT_algorithmMemoryPtrs& ptrs,
     alg->editMode = false;
     alg->highSeqModule.reset();
     alg->highSeqModule.assertInitialized();
+
+    alg->resetdebug = false;
+    alg->resetdebugever = false;
+
     return alg;
 }
 
@@ -539,15 +546,38 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
             pitchOutput[frame] = 0.0f;
             continue;
         }
-
+/*
         // output reset at actve sequencer's sequence ((beatCount >= targetBeats))
         if ( (sequencer >= 0)  && (sequencer < alg->highSeqModule.NUM_SEQUENCERS) ) {
             if (alg->highSeqModule.sequencers[sequencer].getResetStatus() == SEQRESET::RESET) {
                 float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
                 cvOutput[frame] = 5.0f;
+                alg->resetdebug = true;
+                alg->resetdebugever = true;
+            }
+            else
+                alg->resetdebug = false;
+        }
+*/
+
+        // output reset at active sequencer's sequence ((beatCount >= targetBeats))
+        if (sequencer >= 0 && sequencer < alg->highSeqModule.NUM_SEQUENCERS) {
+            if (alg->highSeqModule.sequencers[sequencer].getResetStatus() == SEQRESET::RESET) {
+                if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
+                    float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
+                    cvOutput[frame] = 5.0f;
+                    alg->resetdebug = true;
+                    alg->resetdebugever = true;
+                }
+            } else {
+                alg->resetdebug = false;
+                // Forward reset input only if not in RESET state
+                if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
+                    float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
+                    cvOutput[frame] = resetInput[frame];
+                }
             }
         }
-
         // pitch cv input to pitch output
         float* cvInput; // used for both cv and gate inputs
         if (alg->sequencerCVInput[sequencer] >= 0 && alg->sequencerCVInput[sequencer] < 28) {
@@ -582,11 +612,6 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
             gateOutput[frame] = 0.0f; // fallback if bus is invalid
         }
 
-        // reset cv input to sequencer reset output
-        if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
-            float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
-            cvOutput[frame] = resetInput[frame];
-        }
 
     } // frame loop
 
@@ -777,6 +802,22 @@ bool drawSongSequencer (_NT_algorithm* self) {
     else
         NT_drawText(218, y, "--", color, kNT_textLeft, kNT_textTiny);
 
+
+    // debug reset
+    if (alg->resetdebug) {
+        NT_drawText (230, y, "R", color, kNT_textLeft, kNT_textNormal);
+    } else {
+        NT_drawText (230, y, "N", color, kNT_textLeft, kNT_textNormal);
+    }
+
+    if (alg->resetdebugever) {
+        NT_drawText (243, y, "Y", color, kNT_textLeft, kNT_textNormal);
+    }
+    else
+        NT_drawText (243, y, "N", color, kNT_textLeft, kNT_textNormal);
+
+
+
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
     int x_offset = 30;
     y += y_offset + 5;
@@ -832,13 +873,13 @@ bool drawSongSequencer (_NT_algorithm* self) {
     }
 
     // draw a cursor
-
     cursor.x = alg->cell.col * x_offset + 2;
     cursor.y = y_offset + (alg->cell.row+1) * y_offset;
     if (alg->editMode)  // Draw does not seem to be called whilst Pot Button is depressed
         NT_drawShapeI (kNT_box, cursor.x, cursor.y, 5, 5);
     else
         NT_drawShapeI (kNT_circle, cursor.x, cursor.y, 6, 6);
+
 
     return true; //suppress native parameter line
 }
