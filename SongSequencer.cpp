@@ -184,21 +184,21 @@ static const _NT_parameter songSequencerParameters[] = {
     NT_PARAMETER_CV_INPUT("Seq H Reset Output", 0, 0)
 
     {"Seq A Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq A Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq A Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq B Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq B Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq B Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq C Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq C Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq C Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq D Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq D Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq D Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq E Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq E Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq E Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq F Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq F Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq F Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq G Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq G Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq G Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Seq H Beats/Bar", 1, 16, 4, kNT_unitNone, kNT_scalingNone, nullptr},
-    {"Seq H Bars", 1, 8, 1, kNT_unitNone, kNT_scalingNone, nullptr},
+    {"Seq H Bars", 1, 16, 1, kNT_unitNone, kNT_scalingNone, nullptr},
 
     {"Step1 Seq", 0, 7, 0, kNT_unitNone, kNT_scalingNone, nullptr},
     {"Step1 Repeats", 0, 16, 0, kNT_unitNone, kNT_scalingNone, nullptr},
@@ -470,6 +470,14 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
             continue;
         }
 
+        // output reset at actve sequencer's sequence ((beatCount >= targetBeats))
+        if ( (sequencer >= 0)  && (sequencer < alg->highSeqModule.NUM_SEQUENCERS) ) {
+            if (alg->highSeqModule.sequencers[sequencer].getResetStatus() == SEQRESET::RESET) {
+                float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
+                cvOutput[frame] = 5.0f;
+            }
+        }
+
         // pitch cv input to pitch output
         float* cvInput; // used for both pitch and gate inputs
         if (alg->sequencerCVInput[sequencer] >= 0 && alg->sequencerCVInput[sequencer] < 28) {
@@ -621,10 +629,18 @@ bool drawSongSequencer (_NT_algorithm* self) {
             // Bars
             NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbars());
             NT_drawText(58, y, buffer, color, kNT_textLeft, kNT_textNormal);
-            NT_drawText(71, y, "/", color, kNT_textLeft, kNT_textNormal);
-            // Beats per bar
-            NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatsPerBar());
-            NT_drawText(77, y, buffer, color, kNT_textLeft, kNT_textNormal);
+
+            if (alg->highSeqModule.sequencers[assignedSeq].getbars() < 10) {
+                NT_drawText(65, y, "/", color, kNT_textLeft, kNT_textNormal);
+                // Beats per bar
+                NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatsPerBar());
+                NT_drawText(71, y, buffer, color, kNT_textLeft, kNT_textNormal);
+            } else {
+                NT_drawText(71, y, "/", color, kNT_textLeft, kNT_textNormal);
+                // Beats per bar
+                NT_intToString(buffer, alg->highSeqModule.sequencers[assignedSeq].getbeatsPerBar());
+                NT_drawText(77, y, buffer, color, kNT_textLeft, kNT_textNormal);
+            }
 
         }
         else NT_drawText(58, y, "--/--", color, kNT_textLeft, kNT_textTiny);
