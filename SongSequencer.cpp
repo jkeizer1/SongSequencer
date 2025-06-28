@@ -38,6 +38,7 @@ struct SongSequencer : public _NT_algorithm {
 //    _NT_uiData lastUiData; // Store last UI data for debugging
 
     float lastBeatVoltage; // for debugging
+    float debugVal;
     _cell cell;
 };
 
@@ -556,7 +557,7 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
         if (masterStep < 0) {
             gateOutput[frame] = 0.0f;
             pitchOutput[frame] = 0.0f;
-            assignableOutput[frame] = 0.0f;
+            //assignableOutput[frame] = 0.0f;
             continue;
         }
 
@@ -565,7 +566,7 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
         if (sequencer < 0 || sequencer > alg->highSeqModule.NUM_SEQUENCERS) {
             gateOutput[frame] = 0.0f;
             pitchOutput[frame] = 0.0f;
-            assignableOutput[frame] = 0.0f;
+            //assignableOutput[frame] = 0.0f;
             continue;
         }
 /*
@@ -601,17 +602,22 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
                 }
             }
         }
-        // pitch cv input to pitch output
+        // pitch cv input to pitch output and transpose
         float* cvInput; // used for both cv and gate inputs
         if (alg->sequencerCVInput[sequencer] >= 0 && alg->sequencerCVInput[sequencer] < 28) {
 
             // get transpose input
-            cvInput = busFrames + alg->sequencerTransposeInput[sequencer] * numFrames;
-            float transposeInputval = cvInput[frame];
+            float transposeInputval = 0.0f;
+            alg->debugVal = alg->sequencerTransposeInput[sequencer];
+
+            if (alg->sequencerTransposeInput[sequencer] >= 0) {
+                cvInput = busFrames + alg->sequencerTransposeInput[sequencer] * numFrames;
+                transposeInputval = cvInput[frame];
+            }
 
             cvInput = busFrames + alg->sequencerCVInput[sequencer] * numFrames;
             float pitch = cvInput[frame];
-            pitchOutput[frame] = pitch + transposeInputval;;
+            pitchOutput[frame] = pitch + transposeInputval;
         } else {
             pitchOutput[frame] = 0.0f; // Fallback if bus is invalid
         }
@@ -825,6 +831,9 @@ bool drawSongSequencer (_NT_algorithm* self) {
     else
         NT_drawText(218, y, "--", color, kNT_textLeft, kNT_textTiny);
 
+    // debugVal
+    NT_intToString(buffer, alg->debugVal);
+    NT_drawText (230, y, buffer, color, kNT_textLeft, kNT_textNormal);
 
     // debug reset
     /*
