@@ -469,6 +469,7 @@ void distributeBeatVoltage (float beatVoltage, SongSequencer* alg) {
     } // sequencer loop
 }
 
+
 void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) {
     SongSequencer* alg = static_cast<SongSequencer*>(self);
 
@@ -481,6 +482,7 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
     int assignableBusOUT = self->v[kParamAssignableOutput] - 1;
 
     // Update sequencer input and output bus assignments
+
     alg->sequencerCVInput[0] = self->v[kParamSeq1CVInput] - 1;
     alg->sequencerGateInput[0] = self->v[kParamSeq1GateInput] - 1;
     alg->sequencerResetOutput[0] = self->v[kParamSeq1ResetOutput] - 1;
@@ -563,45 +565,37 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
 
         // Find the current sequencer based on the step
         int sequencer = alg->highSeqModule.steps[masterStep].getAssignedSeq();
-        if (sequencer < 0 || sequencer > alg->highSeqModule.NUM_SEQUENCERS) {
+        if (sequencer < 0 || sequencer >= alg->highSeqModule.NUM_SEQUENCERS) {
             gateOutput[frame] = 0.0f;
             pitchOutput[frame] = 0.0f;
             //assignableOutput[frame] = 0.0f;
             continue;
         }
-/*
-        // output reset at actve sequencer's sequence ((beatCount >= targetBeats))
-        if ( (sequencer >= 0)  && (sequencer < alg->highSeqModule.NUM_SEQUENCERS) ) {
-            if (alg->highSeqModule.sequencers[sequencer].getResetStatus() == SEQRESET::RESET) {
-                float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
-                cvOutput[frame] = 5.0f;
+
+        // output reset at active sequencer's sequence ((beatCount >= targetBeats))
+        if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
+
+            int seqReset = alg->highSeqModule.sequencers[sequencer].getResetStatus();
+            float* cvOutput;
+
+            // if any sequencer is in reset send to all sequencers so next step is always first in each sequencer
+            if ( (seqReset == SEQRESET::RESET) || (resetInput[frame] > 3.0f) ) {
+                for (int seq = 0; seq < alg->highSeqModule.NUM_SEQUENCERS; seq++) {
+                    alg->highSeqModule.sequencers[seq].reset();
+                    float* cvOutput = busFrames + alg->sequencerResetOutput[seq] * numFrames;
+                    cvOutput[frame] = 10.0f;
+                }
                 alg->resetdebug = true;
                 alg->resetdebugever = true;
             }
-            else
+            else {
                 alg->resetdebug = false;
-        }
-*/
-
-        // output reset at active sequencer's sequence ((beatCount >= targetBeats))
-        if (sequencer >= 0 && sequencer < alg->highSeqModule.NUM_SEQUENCERS) {
-
-            if (alg->highSeqModule.sequencers[sequencer].getResetStatus() == SEQRESET::RESET) {
-                if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
-                    float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
-                    cvOutput[frame] = 5.0f;
-                    alg->resetdebug = true;
-                    alg->resetdebugever = true;
-                }
-            } else {
-                alg->resetdebug = false;
-                // Forward reset input only if not in RESET state
-                if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
-                    float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
-                    cvOutput[frame] = resetInput[frame];
-                }
+                cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
+                cvOutput[frame] = 0.0f;
             }
         }
+
+
         // pitch cv input to pitch output and transpose
         float* cvInput; // used for both cv and gate inputs
         if (alg->sequencerCVInput[sequencer] >= 0 && alg->sequencerCVInput[sequencer] < 28) {
@@ -641,6 +635,13 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
             gateOutput[frame] = 0.0f; // fallback if bus is invalid
         }
 
+/*
+        // reset cv input to sequencer reset output
+        if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
+            float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
+            cvOutput[frame] = resetInput[frame];
+        }
+*/
 
     } // frame loop
 
@@ -832,11 +833,10 @@ bool drawSongSequencer (_NT_algorithm* self) {
         NT_drawText(218, y, "--", color, kNT_textLeft, kNT_textTiny);
 
     // debugVal
-    NT_intToString(buffer, alg->debugVal);
-    NT_drawText (230, y, buffer, color, kNT_textLeft, kNT_textNormal);
+    //NT_intToString(buffer, alg->debugVal);
+    //NT_drawText (230, y, buffer, color, kNT_textLeft, kNT_textNormal);
 
     // debug reset
-    /*
     if (alg->resetdebug) {
         NT_drawText (230, y, "R", color, kNT_textLeft, kNT_textNormal);
     } else {
@@ -848,7 +848,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
     }
     else
         NT_drawText (243, y, "N", color, kNT_textLeft, kNT_textNormal);
-    */
+
 
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
     int x_offset = 30;

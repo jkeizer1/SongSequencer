@@ -49,6 +49,7 @@ In addition there is a master Reset Input that resets the internal state of Song
 - Sequencer repeats up to 16 times
 - On Off switches for the 8 steps of the song
 - Master reset input to reset Song Sequencer and attached sequencers
+- Reset issued at end of each sequence to all sequencers
 - Beat input corresponding to the tempo used to advance steps at the right time
 - Pitch CV Output
 - Gate Output
