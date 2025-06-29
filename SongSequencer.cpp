@@ -32,6 +32,13 @@ struct SongSequencer : public _NT_algorithm {
     int sequencerCVAssignableInput[HighSeqModule::NUM_SEQUENCERS];    // Assignable CV input bus for each sequencer (-1 = unassigned)
     bool editMode;
 
+    bool triggerActive;
+    int triggerFrameCounter;
+    float SAMPLE_RATE = 48000;
+    float FRAME_TIME_MS = (1.f/SAMPLE_RATE) * 1000.f;
+    float TRIGGER_FRAME_TARGET_MS = 25.0f;
+    float TRIGGER_FRAMES_NEEDED = TRIGGER_FRAME_TARGET_MS / FRAME_TIME_MS;
+
     bool resetdebug;
     bool resetdebugever;
 
@@ -440,6 +447,15 @@ _NT_algorithm* constructSongSequencer(const _NT_algorithmMemoryPtrs& ptrs,
     alg->highSeqModule.reset();
     alg->highSeqModule.assertInitialized();
 
+    alg->triggerActive = false;
+    alg->triggerFrameCounter = 0;
+
+    alg->SAMPLE_RATE = NT_globals.sampleRate;
+    alg->FRAME_TIME_MS = (1.f/alg->SAMPLE_RATE) * 1000.f;
+    alg->TRIGGER_FRAME_TARGET_MS = 25.0f;
+    alg->TRIGGER_FRAMES_NEEDED = alg->TRIGGER_FRAME_TARGET_MS / alg->FRAME_TIME_MS;
+
+
     alg->resetdebug = false;
     alg->resetdebugever = false;
 
@@ -572,29 +588,83 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
             continue;
         }
 
+
+/*
         // output reset at active sequencer's sequence ((beatCount >= targetBeats))
         if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
 
             int seqReset = alg->highSeqModule.sequencers[sequencer].getResetStatus();
             float* cvOutput;
 
+            if (alg->triggerActive) {
+                alg->triggerFrameCounter += 1;
+            }
+
             // if any sequencer is in reset send to all sequencers so next step is always first in each sequencer
             if ( (seqReset == SEQRESET::RESET) || (resetInput[frame] > 3.0f) ) {
+
+
                 for (int seq = 0; seq < alg->highSeqModule.NUM_SEQUENCERS; seq++) {
                     alg->highSeqModule.sequencers[seq].reset();
                     float* cvOutput = busFrames + alg->sequencerResetOutput[seq] * numFrames;
                     cvOutput[frame] = 10.0f;
+                    alg->triggerActive = true;
                 }
                 alg->resetdebug = true;
                 alg->resetdebugever = true;
+
             }
             else {
-                alg->resetdebug = false;
-                cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
-                cvOutput[frame] = 0.0f;
+                if ((alg->triggerActive) && (alg->triggerFrameCounter >= alg->TRIGGER_FRAMES_NEEDED)) {
+                    alg->triggerActive = false;
+                    alg->triggerFrameCounter = 0;
+                    alg->resetdebug = false;
+                    cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
+                    cvOutput[frame] = 0.0f;
+                }
             }
         }
 
+*/
+        // output reset at active sequencer's sequence ((beatCount >= targetBeats))
+        if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
+            int seqReset = alg->highSeqModule.sequencers[sequencer].getResetStatus();
+            float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
+
+            // Increment counter if trigger is active
+            if (alg->triggerActive) {
+                alg->triggerFrameCounter += 1;
+            }
+
+            // Start a new trigger if reset condition is met
+            if ((seqReset == SEQRESET::RESET) || (resetInput[frame] > 3.0f)) {
+                if (!alg->triggerActive) { // Only start a new trigger if not already active
+                    alg->triggerActive = true;
+                    alg->triggerFrameCounter = 0; // Reset counter at start of new trigger
+                    alg->resetdebug = true;
+                    alg->resetdebugever = true;
+                }
+                // Reset all sequencers
+                for (int seq = 0; seq < alg->highSeqModule.NUM_SEQUENCERS; seq++) {
+                    alg->highSeqModule.sequencers[seq].reset();
+                    float* seqCvOutput = busFrames + alg->sequencerResetOutput[seq] * numFrames;
+                    seqCvOutput[frame] = 10.0f;
+                }
+            }
+            else if (alg->triggerActive) {
+                // Continue outputting trigger until duration is reached
+                cvOutput[frame] = 10.0f;
+                if (alg->triggerFrameCounter >= alg->TRIGGER_FRAMES_NEEDED) {
+                    alg->triggerActive = false;
+                    alg->triggerFrameCounter = 0;
+                    alg->resetdebug = false;
+                    cvOutput[frame] = 0.0f;
+                }
+            }
+            else {
+                cvOutput[frame] = 0.0f; // Ensure output is low when trigger is inactive
+            }
+        }
 
         // pitch cv input to pitch output and transpose
         float* cvInput; // used for both cv and gate inputs
@@ -837,6 +907,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
     //NT_drawText (230, y, buffer, color, kNT_textLeft, kNT_textNormal);
 
     // debug reset
+/*
     if (alg->resetdebug) {
         NT_drawText (230, y, "R", color, kNT_textLeft, kNT_textNormal);
     } else {
@@ -848,7 +919,7 @@ bool drawSongSequencer (_NT_algorithm* self) {
     }
     else
         NT_drawText (243, y, "N", color, kNT_textLeft, kNT_textNormal);
-
+*/
 
     // LINE TWO - Steps Titles Screen is 256x64, Draw steps 1..8
     int x_offset = 30;
