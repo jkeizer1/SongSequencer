@@ -728,7 +728,6 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
         }
 
         // NT Step Sequencer CV Select Output
-        // NT Step Sequencer CV Select Output
         float* selOutput;
 
         if (alg->sequencerSelectOutput[sequencer] >= 0 && alg->sequencerSelectOutput[sequencer] < 28) {
@@ -1077,9 +1076,16 @@ void calculateStaticRequirementsSongSequencer(_NT_staticRequirements& req) {
 void calculateRequirementsSongSequencer(_NT_algorithmRequirements& req, const int32_t* specifications) {
     req.numParameters = ARRAY_SIZE(songSequencerParameters);
     req.sram = sizeof(SongSequencer);
+    req.dram = 28 * 128 * sizeof(float); // Support 28 buses, assume 128 frames per block
+    req.dtc = 0;
+    req.itc = 0;
+    /*
+    req.numParameters = ARRAY_SIZE(songSequencerParameters);
+    req.sram = sizeof(SongSequencer);
     req.dram = 8 * 16 * sizeof(float);
     req.dtc = 0;
     req.itc = 0;
+    */
 }
 
 static const _NT_factory songSequencerFactory = {
