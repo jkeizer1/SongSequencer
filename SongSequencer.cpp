@@ -662,60 +662,23 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
             if (seqReset == SEQRESET::RESET && !alg->triggerActive &&
                 alg->highSeqModule.sequencers[sequencer].getbeatState() == BEATSTATE::FIRSTHIGH) {
                 alg->triggerActive = true;
-            alg->triggerFrameCounter = 0;
-            alg->triggerHandled = true;
-                }
+                alg->triggerFrameCounter = 0;
+                alg->triggerHandled = true;
+            }
 
-                // Manage trigger duration
-                if (alg->triggerActive) {
-                    alg->triggerFrameCounter += 1;
-                    if (alg->triggerFrameCounter >= alg->TRIGGER_FRAMES_NEEDED) {
-                        alg->triggerFrameCounter = 0;
-                        alg->triggerActive = false;
-                        alg->triggerHandled = false;
-                    }
-                    cvOutput[frame] = 10.0f;
+            // Manage trigger duration
+            if (alg->triggerActive) {
+                alg->triggerFrameCounter += 1;
+                if (alg->triggerFrameCounter >= alg->TRIGGER_FRAMES_NEEDED) {
+                    alg->triggerFrameCounter = 0;
+                    alg->triggerActive = false;
+                    alg->triggerHandled = false;
+                }
+                cvOutput[frame] = 10.0f;
                 } else {
                     cvOutput[frame] = 0.0f;
                 }
         }
-/*
-        // output reset at active sequencer's sequence ((beatCount >= targetBeats))
-        if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
-
-            int seqReset = alg->highSeqModule.sequencers[sequencer].getResetStatus();
-            float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
-
-            // Start a new trigger if reset condition is met
-            if ((seqReset == SEQRESET::RESET)  ) {
-
-                if (!alg->triggerHandled) {
-
-                    alg->triggerActive = true;
-                    alg->triggerFrameCounter = 0;
-                    alg->triggerHandled = true;
-                }
-                else
-                    alg->triggerFrameCounter +=1;
-
-                if (alg->triggerFrameCounter >= alg->TRIGGER_FRAMES_NEEDED) {
-                    alg->triggerFrameCounter = 0;
-                    alg->triggerActive = false;
-                }
-
-                if (alg->triggerActive)
-                    cvOutput[frame] = 10.0f;
-                else
-                    cvOutput[frame] = 0.f;
-            }
-            else {
-                alg->triggerHandled = false;
-                alg->triggerActive = false;
-                alg->triggerFrameCounter = 0.f;
-                cvOutput[frame] = 0.0f;
-            }
-        }
-*/
 
         // NT Step Sequencer CV Select Output
         float* selOutput;

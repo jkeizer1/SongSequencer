@@ -1,9 +1,10 @@
-ifndef NT_API_PATH
-	NT_API_PATH := $(HOME)/distingNT_API_V8
-endif
+#ifndef NT_API_PATH
+#	NT_API_PATH := $(HOME)/distingNT_API_V8
+#endif
 
 #INCLUDE_PATH := $(NT_API_PATH)/include/distingnt
-INCLUDE_PATH := $(NT_API_PATH)/include/
+#INCLUDE_PATH := $(NT_API_PATH)/include/
+INCLUDE_PATH := .
 
 inputs := $(wildcard *cpp)
 outputs := $(patsubst %.cpp,plugins/%.o,$(inputs))
