@@ -222,7 +222,6 @@ static const _NT_parameter songSequencerParameters[] = {
     NT_PARAMETER_CV_INPUT("A Transpose Input", 0, 0)
     NT_PARAMETER_CV_INPUT("A Assignable CV Input", 0, 0)
 
-
     NT_PARAMETER_CV_INPUT("B CV Input", 0, 7)
     NT_PARAMETER_CV_INPUT("B Gate Input", 0, 8)
     NT_PARAMETER_CV_INPUT("B Reset Output", 0, 0)
@@ -1076,7 +1075,11 @@ void calculateStaticRequirementsSongSequencer(_NT_staticRequirements& req) {
 void calculateRequirementsSongSequencer(_NT_algorithmRequirements& req, const int32_t* specifications) {
     req.numParameters = ARRAY_SIZE(songSequencerParameters);
     req.sram = sizeof(SongSequencer);
-    req.dram = 28 * 128 * sizeof(float); // Support 28 buses, assume 128 frames per block
+
+    // req.dram = 28 * 128 * sizeof(float); // Support 28 buses, assume 128 frames per block
+    //req.dram = 28 * 128 * sizeof(float); // Support 28 buses, assume 128 frames per block
+    req.dram = 0;
+
     req.dtc = 0;
     req.itc = 0;
     /*
