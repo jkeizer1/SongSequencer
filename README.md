@@ -4,7 +4,7 @@ Make a song by sequencing other sequencers.  Made for the Expert Sleepers Distin
 
 ## Overview
 
-Song Sequencer is used to sequence other sequencers forming a song.  Think of it as a 8:1 switch for sequencers; up to 8 input sequencers are switched to the master outputs at the right time.
+Song Sequencer is used to sequence other sequencers forming a song.  Think of it as a 8:1 switch for sequencers; up to 8 input sequencers are switched to the master outputs at the right time.  Sequence The Disting NT's "Step Sequencer" or external sequencers.
 
 The **Custom UI** displays 8 song steps in a grid where each step has:
 
@@ -99,6 +99,8 @@ SEQUENCER GRID
 - CV Input
 - Gate Input
 - Reset Output
+- Disting NT Step Sequencer Output (patch this output to the NT's Step Sequncer Select Input)
+- Disting NT Step Sequencer number (Use 1 Step Sequencer and select from one of its 32 internal sequencers)
 - Transpose Input
 - Assignable CV Input
 
