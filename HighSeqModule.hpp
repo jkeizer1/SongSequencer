@@ -139,10 +139,10 @@ namespace CLC_Synths {
 	}
 */
     void HighSeqModule::reset() {
-        //masterStep = 0; // ::process will determine the correct starting step
+        masterStep = -1; // ::process will determine the correct starting step  JULY 5 set to -1
         masterStep = findNextStep(); // Set to first active step or -1 if none
         for (int s = 0; s < NUM_SEQUENCERS; s++) 
-            sequencers[s].reset();
+            sequencers[s].setReset();
     }
 
 	void HighSeqModule::process() {   // called once per micro controller main loop process

@@ -28,6 +28,7 @@ namespace CLC_Synths {
 		Sequencer(int p_beatsPerBar, int p_bars);
 		void calcTargetBeats();
 		void reset();
+		void setReset();
 		void countBeat(void);
 		SEQRESET getResetStatus() const { return resetStatus; };
 		void set_beatsPerBar(int b_beatsPerBar);
@@ -57,6 +58,9 @@ namespace CLC_Synths {
 	}
 	void Sequencer::calcTargetBeats() {
 		targetBeats = beatsPerBar * bars;
+	}
+	void Sequencer::setReset() {
+		resetStatus = SEQRESET::RESET;
 	}
 	void Sequencer::reset() {
 		beatCount = 0;

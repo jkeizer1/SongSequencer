@@ -621,20 +621,20 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
     // Process busFrames
     for (int frame = 0; frame < numFrames; frame++) {
 
-        /*
-        // resetInput
-        if (resetInput[frame] > 3.0f) {
-            alg->highSeqModule.reset();    // sends reset to all sequencers
-            alg->triggerFrameCounter = 0;
-        }
-        */
-
         // distribute beat input to all 5 sequencers
         distributeBeatVoltage (beatInput[frame], alg);
         alg->lastBeatVoltage = beatInput[frame]; // Store last voltage for debugging
 
         // Process sequencer logic
         alg->highSeqModule.process();
+
+        // resetInput
+        if (resetInput[frame] > 3.0f) {
+            alg->highSeqModule.reset();    // sends reset to all sequencers
+            alg->triggerFrameCounter = 0;
+            alg->triggerActive = true;
+            //return;
+        }
 
         // Safety check; all step switches might be off
         masterStep = alg->highSeqModule.getMasterStep();
@@ -654,12 +654,13 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
             continue;
         }
 
+        // Handle Reset
         if (alg->sequencerResetOutput[sequencer] >= 0 && alg->sequencerResetOutput[sequencer] < 28) {
             int seqReset = alg->highSeqModule.sequencers[sequencer].getResetStatus();
             float* cvOutput = busFrames + alg->sequencerResetOutput[sequencer] * numFrames;
 
             // Start a new trigger only if not already active and reset condition is met
-            if (seqReset == SEQRESET::RESET && !alg->triggerActive &&
+            if (seqReset == SEQRESET::RESET  && !alg->triggerActive &&
                 alg->highSeqModule.sequencers[sequencer].getbeatState() == BEATSTATE::FIRSTHIGH) {
                 alg->triggerActive = true;
                 alg->triggerFrameCounter = 0;
@@ -677,7 +678,7 @@ void stepSongSequencer(_NT_algorithm* self, float* busFrames, int numFramesBy4) 
                 cvOutput[frame] = 10.0f;
                 } else {
                     cvOutput[frame] = 0.0f;
-                }
+            }
         }
 
         // NT Step Sequencer CV Select Output
