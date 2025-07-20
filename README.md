@@ -4,20 +4,22 @@ Make a song by sequencing other sequencers.  Made for the Expert Sleepers Distin
 
 ## Overview
 
-Song Sequencer is used to sequence other sequencers forming a song.  Think of it as a 8:1 switch for sequencers; up to 8 input sequencers are switched to the master outputs at the right time.  Sequence The Disting NT's "Step Sequencer" or external sequencers.  It can sequence external sequencers (via CV and gates), and includes a transpose cv added to pitch, and assignable CV output (WIP).
+Song Sequencer is used to sequence other sequencers forming a song.  Think of it as a 8:1 switch for sequencers; up to 8 input sequencers are switched to the master outputs at the right time.  Sequence the Disting NT's "Step Sequencer" or external sequencers.  It can sequence external sequencers (via CV and gates), and includes a transpose cv added to pitch, and assignable CV output (WIP).
 
 
 ## Key Features
 
-- Sequence up to 8 other sequencers, one or more sequencers may be a Disting NT Step Sequencers each with up to 32 Sequences (See Disting NT Step Sequencer documenation)
-- Sequencer repeats up to 16 times so that you may have songs with repeated phrases
-- On Off switches for the 8 steps of the song that may be "played" via the custom user interface (UI)
-- Master reset input to reset Song Sequencer to the first step that is "On"
-- Reset issued at end of each sequence which can be a shared reset output or by sequencer
-- Beat input corresponding to the tempo used to advance steps at the right time
-- Pitch CV Output with transpose CV input (unquantized)
-- Gate Output that follows the assigned sequencer (ie. independent of the beat clock tempo)
-- Assignable CV Output (pass any CV from the input sequencer for a step to an output) (WIP)
+- Sequence up to 8 other sequencers (external modules) over 8 steps 
+- Sequence the Expert Sleeers Disting NT Step Sequencer by selecting from its 32 sequences for each of the 8 steps
+- Sequence phrase repeats up to 16 times per step 
+- Set On Off switches for the 8 steps of the song that may be "played" via the custom user interface (UI)
+- Use a Master reset input to reset Song Sequencer to the first step that is "On"
+- Send Reset triggers at end of each sequence 
+- Share the Reset output across all sequencers
+- Use a Beat (tempo) input and Bars/Beats per Bar to control when to switch to the next sequencer step
+- Pass Pitch CV Output with transpose CV input (unquantized) to a common CV output
+- Pass Gate Output that follows the assigned sequencer (ie. independent of the beat clock tempo) to a common Gate Output
+- Pass an Assignable CV Output (pass any CV from the input sequencer for a step to an output) (WIP) 
 
 ## Custom User Interface
 
@@ -29,16 +31,21 @@ The **Custom UI** displays 8 song steps in a grid where each step has:
 - Repeat value (0 through 16)
 - On|off step switch
 
+A "Step" is simply a phrase implemented in some sequencer.
+
 It is "playable" by changing the assigned sequencer to each step, the repeats, and switching steps on or off.
 
 ## Navigation
 
-- **Navigate** the grid with the left and right encoders (bottom row, not the top row of Pots)
+- **Navigate**
 
+- Navigate the grid with the left and right encoders (bottom row, not the top row of Pots)
 - Turn left encoder to navigate horizontally across steps
-- Turn right encoder to navigate vertically across rows (Seq Row - assigned sequencer, REP - # of repeats for the step, On - set the step on or off ("-"))
+- Turn right encoder to navigate vertically across rows 
 
-- **Change Values** - pressing and turning the Right Pot (top row); ie. press and hold.
+- **Change Values** 
+
+- pressing and turn the Right Pot (top row); ie. press and hold to change a value
 - For quick changes of switches, just click to enter the value from the POT (most useful for switch changes)
 
 ## Song Sequencer Outputs
