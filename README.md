@@ -4,7 +4,7 @@ Make a song by sequencing other sequencers.  Made for the Expert Sleepers Distin
 
 ## Overview
 
-Song Sequencer is used to sequence other sequencers forming a song.  Think of it as a 8:1 switch for sequencers; up to 8 input sequencers are switched to the master outputs at the right time.  Sequence the Disting NT's "Step Sequencer" or external sequencers.  It can sequence external sequencers (via CV and gates), and includes a transpose cv added to pitch, and assignable CV output (WIP).
+Song Sequencer is used to sequence other sequencers to form a song.  Think of it as a 8:1 switch for sequencers; up to 8 input sequencers are switched to the master outputs at the right time.  Sequence the Disting NT's "Step Sequencer" or external sequencers (via CV and gates), and includes a transpose cv added to pitch, and assignable CV output (WIP).
 
 
 ## Key Features
@@ -37,15 +37,15 @@ It is "playable" by changing the assigned sequencer to each step, the repeats, a
 
 ## Navigation
 
-- **Navigate**
+**Navigate**
 
 - Navigate the grid with the left and right encoders (bottom row, not the top row of Pots)
 - Turn left encoder to navigate horizontally across steps
 - Turn right encoder to navigate vertically across rows 
 
-- **Change Values** 
+**Change Values** 
 
-- pressing and turn the Right Pot (top row); ie. press and hold to change a value
+- Press, hold and turn the Right Pot (top row); ie. press and hold to change a value. Release it when done.
 - For quick changes of switches, just click to enter the value from the POT (most useful for switch changes)
 
 ## Song Sequencer Outputs
@@ -84,7 +84,7 @@ You can think of each step as being a part of a song, with an associated input s
 
 Song Sequencer uses a master **Beat (clock)** input common across all sequencers.  The beat clock is used to advance to the next step by counting beats.
 
-- Each sequencer has a **Bars** parameter and a **Beats Per Bar** parameter.   For example, if Bars = 1, and Beats per Bar = 4, Song Sequencer will count beats from the master beat input until it reaches 4, and then it will advance to the next sequencer with an ON switch. 
+- Each sequencer has a **Bars** parameter and a **Beats Per Bar** parameter.   For example, if Bars = 1, and Beats per Bar = 4, Song Sequencer will count beats from the master beat input until it reaches 4, and then it will advance to the next sequencer step with an ON switch. 
 
 - Sequencers can output CV/Gates in any timing not just "on the beat clock"; CVs and Gates are output independently from the beat clock
 - Maximum 256 beats each sequence.
@@ -142,21 +142,29 @@ There is a master Reset Input that resets the internal state of SongSequencer, a
 - Use a sequencer to generate a transpose value as input
 - Set the bars/beats per bar to be shorter than your sequencer; you can use the standard parameter screens to dynamically play from 1 to n sequencer steps
 
+## Routing
+
+![alt text](images/Routing.png "Routing")
+
+- Reset Input
+- Beat Input
+- Pitch CV Output
+- Gate Output
+- Assignable Output
+
 ## Step Configuration
 
 ![alt text](images/StepConfig.png "Step Configuration")
 
 Step Parameters (per 8 steps) : Also managed by the custom UI for playability
 
-- Assigned Sequencer (indicated by number 0..7) { to do: show A-H instead }
+- Assigned Sequencer (indicated by A..H)
 - Repeat Count
 - On or Off Switch (display shows "ON" or "--")
 
-## Sequencer Parameters 
+## Sequencer Assignment
 
-![alt text](images/SeqAssign.png "Sequencer Parameters"")
-
-## Sequencer Parameters (per 8 sequencers A .. H)
+![alt text](images/SeqAssign.png "Sequencer Assignments")
 
 - CV Input
 - Gate Input
@@ -183,6 +191,15 @@ C) 4 Bars, 4 steps per Bar = 16 beats
 
 ** The important thing as that 16 beats will be counted before Song Sequencer advances to the next step. 
 You can, of course, set this up for a 4 step or 8 step sequencer (or whatever).
+
+## Step Configuration : Also managed by te custom UI for playability
+
+![alt text](images/StepConfig.png "Sequencer Configuration") 
+
+- Step n assigned Sequencer (A..H)
+- Step Repeats
+- Step Switch
+
 
 ## Installation
 
