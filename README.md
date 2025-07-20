@@ -152,16 +152,6 @@ There is a master Reset Input that resets the internal state of SongSequencer, a
 - Gate Output
 - Assignable Output
 
-## Step Configuration
-
-![alt text](images/StepConfig.png "Step Configuration")
-
-Step Parameters (per 8 steps) : Also managed by the custom UI for playability
-
-- Assigned Sequencer (indicated by A..H)
-- Repeat Count
-- On or Off Switch (display shows "ON" or "--")
-
 ## Sequencer Assignment
 
 ![alt text](images/SeqAssign.png "Sequencer Assignments")
@@ -174,7 +164,7 @@ Step Parameters (per 8 steps) : Also managed by the custom UI for playability
 - Transpose Input
 - Assignable CV Input (WIP)
 
-## Sequencer Configuration (per 8 sequencers A .. H) : Also managed by the custom UI for playability
+## Sequencer Configuration (per 8 sequencers A .. H) 
 
 ![alt text](images/SeqConfig.png "Sequencer Configuration") 
 
@@ -192,14 +182,15 @@ C) 4 Bars, 4 steps per Bar = 16 beats
 ** The important thing as that 16 beats will be counted before Song Sequencer advances to the next step. 
 You can, of course, set this up for a 4 step or 8 step sequencer (or whatever).
 
-## Step Configuration : Also managed by te custom UI for playability
+## Step Configuration : Also managed by the custom UI for playability
 
-![alt text](images/StepConfig.png "Sequencer Configuration") 
+![alt text](images/StepConfig.png "Step Configuration")
 
-- Step n assigned Sequencer (A..H)
-- Step Repeats
-- Step Switch
+Step Parameters (per 8 steps) 
 
+- Assigned Sequencer (indicated by A..H)
+- Repeat Count
+- On or Off Switch (display shows "ON" or "--")
 
 ## Installation
 
