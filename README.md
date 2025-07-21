@@ -4,7 +4,7 @@ Make a song by sequencing other sequencers.  Made for the Expert Sleepers Distin
 
 ## Overview
 
-Song Sequencer is used to sequence other sequencers to form a song.  Think of it as a 8:1 switch for sequencers; up to 8 input sequencers are switched to the master outputs at the right time.  Sequence the Disting NT's "Step Sequencer" or external sequencers (via CV and gates), and includes a transpose cv added to pitch, and assignable CV output (WIP).
+Song Sequencer is used to sequence other sequencers to form a song.  Think of it as a 8:1 switch for sequencers; up to 8 input sequencers are switched to the master outputs at the right time.  Sequence the Disting NT's "Step Sequencer" or external sequencers (via CV and gates), and includes a transpose cv added to pitch, and assignable CV output .
 
 
 ## Key Features
@@ -19,7 +19,7 @@ Song Sequencer is used to sequence other sequencers to form a song.  Think of it
 - Use a Beat (tempo) input and Bars/Beats per Bar to control when to switch to the next sequencer step
 - Pass Pitch CV Output with transpose CV input (unquantized) to a common CV output
 - Pass Gate Output that follows the assigned sequencer (ie. independent of the beat clock tempo) to a common Gate Output
-- Pass an Assignable CV Output (pass any CV from the input sequencer for a step to an output) (WIP) 
+- Pass an Assignable CV Output (pass any CV from the input sequencer for a step to an output)  
 
 ## Custom User Interface
 
@@ -57,9 +57,9 @@ Song Sequencer outputs the following for the current step (active sequencer A-H 
 - Reset trigger output (optional) and normally connected to the assigned sequencers reset input; trigger duration is 25ms across all sample rates
 - St.Seq. Output - this output is intended to be used for the Disting NT Step Sequencer's "Sequence CV Input)" to select 1 of 32 Sequences
 - Seq (A..H) ST Seq # - this selects the NT's Step Sequencer Sequence (1..32) to be sent out on St.Seq. Output
-- Assignable control voltage (CV) (optional) (WIP)
+- Assignable control voltage (CV) (optional) 
 
-The assignable control voltage can be anything but most commonly would be used for something like velocity. (WIP) 
+The assignable control voltage can be anything but most commonly would be used for something like velocity.  
 
 ## Song Sequencer Inputs
 
@@ -73,7 +73,7 @@ The assignable control voltage can be anything but most commonly would be used f
 - Pitch (with optional added Transpose CV)
 - Gate
 - Transpose CV
-- Assignable Input CV (WIP) to be used for something like Velocity or Bend
+- Assignable Input CV  to be used for something like Velocity or Bend
 
 
 ## How It Works
@@ -162,7 +162,7 @@ There is a master Reset Input that resets the internal state of SongSequencer, a
 - Disting NT Step Sequencer Output (patch this output to the NT's Step Sequncer Select Input)
 - Disting NT Step Sequencer number (Use 1 Step Sequencer and select from one of its 32 internal sequencers)
 - Transpose Input
-- Assignable CV Input (WIP)
+- Assignable CV Input 
 
 ## Sequencer Configuration (per 8 sequencers A .. H) 
 
