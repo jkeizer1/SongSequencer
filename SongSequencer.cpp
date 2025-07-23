@@ -211,45 +211,45 @@ static const char* const enumStringsSequencers[] = {
 static const _NT_parameter songSequencerParameters[] = {
     NT_PARAMETER_AUDIO_INPUT("Reset Input", 0, 1)   /* 0 is none */
     NT_PARAMETER_AUDIO_INPUT("Beat Input", 0, 2)
-    NT_PARAMETER_CV_OUTPUT("Pitch CV Output", 0, 1)
-    NT_PARAMETER_CV_OUTPUT("Gate Output", 0, 2)
+    NT_PARAMETER_CV_OUTPUT("Pitch CV Output", 0, 13) // Output 1
+    NT_PARAMETER_CV_OUTPUT("Gate Output", 0, 14)     // Output 2
     NT_PARAMETER_CV_OUTPUT("Assignable Output", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("A CV Input", 0, 5)
-    NT_PARAMETER_CV_INPUT("A Gate Input", 0, 6)
-    NT_PARAMETER_CV_INPUT("A Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("A CV Input", 0, 3)
+    NT_PARAMETER_CV_INPUT("A Gate Input", 0, 4)
+    NT_PARAMETER_CV_INPUT("A Reset Output", 0, 18)
     NT_PARAMETER_CV_INPUT("A St.Seq. Output", 0, 0)
     {"Seq A ST Seq", 1, 32, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     NT_PARAMETER_CV_INPUT("A Transpose Input", 0, 0)
     NT_PARAMETER_CV_INPUT("A Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("B CV Input", 0, 7)
-    NT_PARAMETER_CV_INPUT("B Gate Input", 0, 8)
-    NT_PARAMETER_CV_INPUT("B Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("B CV Input", 0, 5)
+    NT_PARAMETER_CV_INPUT("B Gate Input", 0, 6)
+    NT_PARAMETER_CV_INPUT("B Reset Output", 0, 18)
     NT_PARAMETER_CV_INPUT("B St.Seq. Output", 0, 0)
     {"Seq B ST Seq", 1, 32, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     NT_PARAMETER_CV_INPUT("B Transpose Input", 0, 0)
     NT_PARAMETER_CV_INPUT("B Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("C CV Input", 0, 9)
-    NT_PARAMETER_CV_INPUT("C Gate Input", 0, 10)
-    NT_PARAMETER_CV_INPUT("C Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("C CV Input", 0, 7)
+    NT_PARAMETER_CV_INPUT("C Gate Input", 0, 8)
+    NT_PARAMETER_CV_INPUT("C Reset Output", 0, 18)
     NT_PARAMETER_CV_INPUT("C St.Seq. Output", 0, 0)
     {"Seq C ST Seq", 1, 32, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     NT_PARAMETER_CV_INPUT("C Transpose Input", 0, 0)
     NT_PARAMETER_CV_INPUT("C Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("D CV Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("D Gate Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("D Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("D CV Input", 0, 9)
+    NT_PARAMETER_CV_INPUT("D Gate Input", 0, 10)
+    NT_PARAMETER_CV_INPUT("D Reset Output", 0, 18)
     NT_PARAMETER_CV_INPUT("D St.Seq. Output", 0, 0)
     {"Seq D ST Seq", 1, 32, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     NT_PARAMETER_CV_INPUT("D Transpose Input", 0, 0)
     NT_PARAMETER_CV_INPUT("D Assignable CV Input", 0, 0)
 
-    NT_PARAMETER_CV_INPUT("E CV Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("E Gate Input", 0, 0)
-    NT_PARAMETER_CV_INPUT("E Reset Output", 0, 0)
+    NT_PARAMETER_CV_INPUT("E CV Input", 0, 11)
+    NT_PARAMETER_CV_INPUT("E Gate Input", 0, 12)
+    NT_PARAMETER_CV_INPUT("E Reset Output", 0, 18)
     NT_PARAMETER_CV_INPUT("E St.Seq. Output", 0, 0)
     {"Seq E ST Seq", 1, 32, 1, kNT_unitNone, kNT_scalingNone, nullptr},
     NT_PARAMETER_CV_INPUT("E Transpose Input", 0, 0)
